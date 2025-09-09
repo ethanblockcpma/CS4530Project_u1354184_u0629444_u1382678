@@ -19,3 +19,22 @@ This is our main screen. It shows the pictures the user has created. The circle 
 This is our drawing screen. It includes a canvas on which the user can draw with their finger. Below the drawing is a toolbar with options for changing the
 pen size, pen color, and pen shape. Clicking on any of these three options will expand the toolbar to allow the user to change it. Our sketch shows an example
 of changing the pen shape. At the bottom of the screen are buttons for returning to the home screen and saving the drawing.
+
+
+## Our Plan
+Task Breakdown:
+Classes:
+ - Model
+ - ViewModel
+ - View
+
+Layouts:
+ - Main Screen Layout
+ - Drawing Screen Layout
+ - Splash Screen Layout
+ - Pen Customization Layout(s)
+
+Unit Tests:
+ - Change pen color on View, confirm changes are made correctly in the other classes
+ - Change pen size on View, confirm changes are made correctly in other classes
+ - Change pen shape on View, confirm changes are made correctly in other classes
