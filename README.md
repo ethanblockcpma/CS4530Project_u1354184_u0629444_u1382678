@@ -5,7 +5,7 @@ GitHub repo for CS 4530 U of U
 
 <div>
 This is our splash screen.
-<img title="Splash Screen" alt="Splash Screen" src="/images/Splash Screen">
+<img title="Splash Screen" alt="Splash Screen" src="/images/Splash Screen.pdf">
 </div>
 
 <div>
