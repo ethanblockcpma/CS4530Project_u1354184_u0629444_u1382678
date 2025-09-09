@@ -3,4 +3,18 @@ GitHub repo for CS 4530 U of U
 
 # Group Project: Startup
 
-<embed src="/images/Drawing App.pdf">
+<div>
+This is our splash screen.
+<img title="Splash Screen" alt="Splash Screen" src="/images/Splash Screen">
+</div>
+
+<div>
+This is our main screen.
+<img title="Main Screen" alt="Main Screen" src="/images/Main Screen.
+pdf">
+</div>
+
+<div>
+This is our drawing screen.
+<img title= "Drawing Screen" alt="Drawing Screen" src="/images/Drawing Screen.pdf">
+</div>
