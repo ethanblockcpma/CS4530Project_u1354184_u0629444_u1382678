@@ -5,6 +5,7 @@ GitHub repo for CS 4530 U of U
 
 <div>
 <img title="Splash Screen" alt="Splash Screen" src="/images/Splash Screen.pdf">
+ ![Splash Screen.pdf](images/Splash Screen.pdf)
 </div>
 This is our splash screen. It will animate on the screen when the user first opens the application.
 
