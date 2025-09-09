@@ -24,17 +24,17 @@ of changing the pen shape. At the bottom of the screen are buttons for returning
 ## Our Plan
 Task Breakdown:
 Classes:
- - Model
- - ViewModel
- - View
+ - Model  (Ethan) (1)
+ - ViewModel   (Leo) (3)
+ - View   (Draeden) (2)
 
 Layouts:
- - Main Screen Layout
- - Drawing Screen Layout
- - Splash Screen Layout
- - Pen Customization Layout(s)
+ - Main Screen Layout (Ethan) (1)
+ - Drawing Screen Layout (Draeden) (2)
+ - Splash Screen Layout (Leo) (3)
+ - Pen Customization Layout(s) (Leo) (4)
 
 Unit Tests:
- - Change pen color on View, confirm changes are made correctly in the other classes
- - Change pen size on View, confirm changes are made correctly in other classes
- - Change pen shape on View, confirm changes are made correctly in other classes
+ - Change pen color on View, confirm changes are made correctly in the other classes (1) (Ethan)
+ - Change pen size on View, confirm changes are made correctly in other classes (2) (Draeden)
+ - Change pen shape on View, confirm changes are made correctly in other classes (3) (Leo)
