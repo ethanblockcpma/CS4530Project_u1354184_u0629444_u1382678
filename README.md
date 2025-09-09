@@ -10,8 +10,7 @@ This is our splash screen.
 
 <div>
 This is our main screen.
-<img title="Main Screen" alt="Main Screen" src="/images/Main Screen.
-pdf">
+<img title="Main Screen" alt="Main Screen" src="/images/Main Screen.pdf">
 </div>
 
 <div>
