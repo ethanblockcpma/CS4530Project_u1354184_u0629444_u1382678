@@ -7,11 +7,12 @@ GitHub repo for CS 4530 U of U
 This is our splash screen. It will animate on the screen when the user first opens the application.
 <img title="Splash Screen" alt="Splash Screen" src="/images/Splash Screen.pdf">
 </div>
+This is our splash screen.
 
 <div>
-This is our main screen.
 <img title="Main Screen" alt="Main Screen" src="/images/Main Screen.pdf">
 </div>
+This is our main screen. It shows the pictures the user has created. The circle in the top right of the pictures indicates the picture the user is going to edit. The user can press the edit button in the top right to edit the selected picture. This screen is scrollable. At the botton of the screen is the 'New Drawing' button. This will create a new drawing for the user and take you to the next screen, the 'Drawing Screen. 
 
 <div>
 This is our drawing screen. It includes a canvas on which the user can draw with their finger. Below the drawing is a toolbar with options for changing the
@@ -19,3 +20,4 @@ pen size, pen color, and pen shape. Clicking on any of these three options will 
 of changing the pen shape. At the bottom of the screen are buttons for returning to the home screen and saving the drawing.
 <img title= "Drawing Screen" alt="Drawing Screen" src="/images/Drawing Screen.pdf">
 </div>
+This is our drawing screen.
