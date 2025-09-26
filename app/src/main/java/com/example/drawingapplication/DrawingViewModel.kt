@@ -30,6 +30,21 @@ class DrawingViewModel : ViewModel() {
         penShape.value = newShape
     }
 
+    enum class PenOptions {
+        NONE, COLOR, SHAPE, SIZE
+    }
+
+    private val penOptionsShown = MutableStateFlow(PenOptions.NONE)
+    val penOptionsShownReadOnly : StateFlow<PenOptions> = penOptionsShown
+
+    fun changeOrTogglePenOptions(newPenOptions : PenOptions) {
+        if (penOptionsShown.value == newPenOptions) {
+            penOptionsShown.value = PenOptions.NONE
+        } else {
+            penOptionsShown.value = newPenOptions
+        }
+    }
+
     // Drawing paths
 
     // each inner list represents one complete stroke (pen down -> drag -> pen up)
