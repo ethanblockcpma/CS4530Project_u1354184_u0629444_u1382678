@@ -62,8 +62,8 @@ class DrawingScreen : ComponentActivity() {
 
 @Composable
 fun DrawingCanvas(drawingVM: DrawingViewModel) {
-    var strokes by remember { mutableStateOf(listOf<List<Offset>>()) }
-    var currentStroke by remember { mutableStateOf(listOf<Offset>()) }
+    var strokes by remember { mutableStateOf(listOf<List<Triple<Offset, Color, Float>>>()) }
+    var currentStroke by remember { mutableStateOf(listOf<Triple<Offset, Color, Float>>()) }
 
     Column(
         modifier = Modifier
@@ -82,14 +82,20 @@ fun DrawingCanvas(drawingVM: DrawingViewModel) {
                 .pointerInput(Unit) {
                     detectDragGestures(
                         onDragStart = { offset ->
-                            currentStroke = listOf(offset)
+                            currentStroke = listOf(Triple(
+                                offset,
+                                drawingVM.penColorReadOnly.value,
+                                drawingVM.penSizeReadOnly.value))
                             //if you update current stroke live here not on DragEnd,
                             // then you do not need a second loop
                             strokes = strokes + listOf(currentStroke)
                         },
                         onDrag = { change, x ->
                             change.consume()
-                            currentStroke = currentStroke + change.position
+                            currentStroke = currentStroke + Triple(
+                                change.position,
+                                drawingVM.penColorReadOnly.value,
+                                drawingVM.penSizeReadOnly.value)
                             //if you update current stroke live here not on DragEnd,
                             // then you do not need a second loop
                             strokes = strokes.dropLast(1) + listOf(currentStroke)
@@ -105,10 +111,10 @@ fun DrawingCanvas(drawingVM: DrawingViewModel) {
             strokes.forEach { stroke ->
                 for (i in 0 until stroke.size - 1) {
                     drawLine(
-                        color = drawingVM.penColorReadOnly.value,
-                        start = stroke[i],
-                        end = stroke[i + 1],
-                        strokeWidth = drawingVM.penSizeReadOnly.value
+                        color = stroke[i].second,
+                        start = stroke[i].first,
+                        end = stroke[i + 1].first,
+                        strokeWidth = stroke[i].third
                     )
                 }
             }
@@ -146,7 +152,6 @@ fun DrawingCanvas(drawingVM: DrawingViewModel) {
             val firstRowColors = listOf(Color.Black, Color.White, Color.Red, Color.Yellow, Color.Blue)
             val secondRowColors = listOf(Color.Green, Color.Magenta, Color.Cyan, Color.DarkGray, Color.Gray)
             Box(modifier = Modifier.width(300.dp).height(150.dp).background(Color.LightGray)) {
-                // TODO changing color changes already drawn lines, need to fix
                 if (options == DrawingViewModel.PenOptions.COLOR) {
                     Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Center) {
                         LazyRow(Modifier.padding(8.dp).fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
@@ -172,7 +177,7 @@ fun DrawingCanvas(drawingVM: DrawingViewModel) {
                     // TODO implement shape options
                     Text("shape options")
                 } else if (options == DrawingViewModel.PenOptions.SIZE) {
-                    // TODO changing size changes already drawn lines, need to fix
+                    // TODO the biggest size looks pretty weird, should maybe improve
                     Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Center) {
                         Row(
                             Modifier.padding(8.dp).fillMaxWidth(),
