@@ -12,7 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.DrawingApplication">
         <activity
-            android:name=".MainActivity"
+            android:name=".view.DrawingScreen"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.DrawingApplication">
