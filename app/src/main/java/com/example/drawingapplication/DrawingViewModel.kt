@@ -1,6 +1,7 @@
 package com.example.drawingapplication
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -8,17 +9,17 @@ import kotlinx.coroutines.flow.StateFlow
 class DrawingViewModel : ViewModel() {
 
     //Drawing state
-    private val penColor = MutableStateFlow("black")
-    val penColorReadOnly : StateFlow<String> = penColor
+    private val penColor = MutableStateFlow(Color.Black)
+    val penColorReadOnly : StateFlow<Color> = penColor
 
-    fun changePenColor(color : String){
+    fun changePenColor(color : Color){
         penColor.value = color
     }
 
-    private val penSize = MutableStateFlow(1)
-    val penSizeReadonly : StateFlow<Int> = penSize
+    private val penSize = MutableStateFlow(8f)
+    val penSizeReadOnly : StateFlow<Float> = penSize
 
-    fun changePenSize(newSize : Int){
+    fun changePenSize(newSize : Float){
         penSize.value = newSize
     }
 

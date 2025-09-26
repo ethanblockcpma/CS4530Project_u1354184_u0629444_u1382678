@@ -1,6 +1,9 @@
 package com.example.drawingapplication
 
+import android.content.Intent
 import android.os.Bundle
+import android.view.View
+import android.widget.Button
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -20,6 +23,7 @@ import com.example.drawingapplication.ui.theme.DrawingApplicationTheme
 import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.runtime.*
+import com.example.drawingapplication.view.DrawingScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,11 +33,17 @@ class MainActivity : ComponentActivity() {
             DrawingApplicationTheme {
                 SplashScreen(
                     onSplashComplete = {
-                        println("Splash screen completed!")
+                        loadDrawingScreen()
                     }
                 )
             }
         }
+    }
+
+    // TODO For now we go straight to the drawing screen because the main screen isn't implemented yet
+    fun loadDrawingScreen() {
+        val intent = Intent(this, DrawingScreen::class.java)
+        startActivity(intent)
     }
 }
 
@@ -43,7 +53,6 @@ fun SplashScreen(onSplashComplete: () -> Unit ){
 
     LaunchedEffect(Unit){
         delay(2000)
-        displayText = "Splash screen completed!"
         onSplashComplete()
     }
 

@@ -32,9 +32,8 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
-import com.example.drawingapplication.Greeting
+import com.example.drawingapplication.DrawingViewModel
 import com.example.drawingapplication.ui.theme.DrawingApplicationTheme
-import kotlin.math.min
 
 class DrawingScreen : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,14 +41,15 @@ class DrawingScreen : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             DrawingApplicationTheme {
-                DrawingCanvas()
+                val drawingVM = DrawingViewModel()
+                DrawingCanvas(drawingVM)
             }
         }
     }
 }
 
 @Composable
-fun DrawingCanvas() {
+fun DrawingCanvas(drawingVM: DrawingViewModel) {
     var strokes by remember { mutableStateOf(listOf<List<Offset>>()) }
     var currentStroke by remember { mutableStateOf(listOf<Offset>()) }
 
@@ -93,10 +93,10 @@ fun DrawingCanvas() {
             strokes.forEach { stroke ->
                 for (i in 0 until stroke.size - 1) {
                     drawLine(
-                        color = Color.Black,
+                        color = drawingVM.penColorReadOnly.value,
                         start = stroke[i],
                         end = stroke[i + 1],
-                        strokeWidth = 8f
+                        strokeWidth = drawingVM.penSizeReadOnly.value
                     )
                 }
             }
