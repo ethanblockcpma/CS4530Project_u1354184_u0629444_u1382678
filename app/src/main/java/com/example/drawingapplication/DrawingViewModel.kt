@@ -36,7 +36,7 @@ class DrawingViewModel : ViewModel() {
     val strokesReadOnly : StateFlow<List<List<Offset>>> = strokes
 
     private val currentStroke = MutableStateFlow<List<Offset>>(emptyList())
-    val currentStrokReadOnly : StateFlow<List<Offset>> = currentStroke
+    val currentStrokeReadOnly : StateFlow<List<Offset>> = currentStroke
 
     fun startStokes(offset : Offset){
         currentStroke.value = listOf(offset)
