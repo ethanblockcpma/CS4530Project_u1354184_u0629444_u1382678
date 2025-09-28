@@ -6,6 +6,13 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
+
+data class DrawingPoint(
+    val offset : Offset,
+    val color : Color,
+    val size : Float
+)
+
 class DrawingViewModel : ViewModel() {
 
     //Drawing state
@@ -48,19 +55,21 @@ class DrawingViewModel : ViewModel() {
     // Drawing paths
 
     // each inner list represents one complete stroke (pen down -> drag -> pen up)
-    private val strokes = MutableStateFlow<List<List<Offset>>>(emptyList())
-    val strokesReadOnly : StateFlow<List<List<Offset>>> = strokes
+    private val strokes = MutableStateFlow<List<List<DrawingPoint>>>(emptyList())
+    val strokesReadOnly : StateFlow<List<List<DrawingPoint>>> = strokes
 
-    private val currentStroke = MutableStateFlow<List<Offset>>(emptyList())
-    val currentStrokeReadOnly : StateFlow<List<Offset>> = currentStroke
+    private val currentStroke = MutableStateFlow<List<DrawingPoint>>(emptyList())
+    val currentStrokeReadOnly : StateFlow<List<DrawingPoint>> = currentStroke
 
-    fun startStokes(offset : Offset){
-        currentStroke.value = listOf(offset)
+    fun startStoke(offset : Offset){
+        val drawingPoint = DrawingPoint(offset, penColor.value, penSize.value)
+        currentStroke.value = listOf(drawingPoint)
         strokes.value = strokes.value + listOf(currentStroke.value)
     }
 
     fun addToStroke(offset : Offset){
-        currentStroke.value = currentStroke.value + offset
+        val drawingPoint = DrawingPoint(offset, penColor.value, penSize.value)
+        currentStroke.value = currentStroke.value + drawingPoint
         strokes.value = strokes.value.dropLast(1) + listOf(currentStroke.value)
     }
 

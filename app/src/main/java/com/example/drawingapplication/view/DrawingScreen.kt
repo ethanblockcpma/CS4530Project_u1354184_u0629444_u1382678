@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -46,14 +47,16 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.example.drawingapplication.DrawingViewModel
 import com.example.drawingapplication.ui.theme.DrawingApplicationTheme
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 class DrawingScreen : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             DrawingApplicationTheme {
-                val drawingVM = DrawingViewModel()
+                val drawingVM:DrawingViewModel = viewModel()
                 DrawingCanvas(drawingVM)
             }
         }
@@ -62,7 +65,8 @@ class DrawingScreen : ComponentActivity() {
 
 @Composable
 fun DrawingCanvas(drawingVM: DrawingViewModel) {
-    var strokes by remember { mutableStateOf(listOf<List<Triple<Offset, Color, Float>>>()) }
+    //var strokes by remember { mutableStateOf(listOf<List<Triple<Offset, Color, Float>>>()) }
+    val strokes by drawingVM.strokesReadOnly.collectAsState()
     var currentStroke by remember { mutableStateOf(listOf<Triple<Offset, Color, Float>>()) }
 
     Column(
@@ -82,27 +86,30 @@ fun DrawingCanvas(drawingVM: DrawingViewModel) {
                 .pointerInput(Unit) {
                     detectDragGestures(
                         onDragStart = { offset ->
-                            currentStroke = listOf(Triple(
-                                offset,
-                                drawingVM.penColorReadOnly.value,
-                                drawingVM.penSizeReadOnly.value))
+                           // currentStroke = listOf(Triple(
+                           //     offset,
+                            //    drawingVM.penColorReadOnly.value,
+                            //    drawingVM.penSizeReadOnly.value))
                             //if you update current stroke live here not on DragEnd,
                             // then you do not need a second loop
-                            strokes = strokes + listOf(currentStroke)
+                            //strokes = strokes + listOf(currentStroke)
+                            drawingVM.startStoke(offset)
                         },
                         onDrag = { change, x ->
                             change.consume()
-                            currentStroke = currentStroke + Triple(
-                                change.position,
-                                drawingVM.penColorReadOnly.value,
-                                drawingVM.penSizeReadOnly.value)
+                            //currentStroke = currentStroke + Triple(
+                            //    change.position,
+                            //    drawingVM.penColorReadOnly.value,
+                            //    drawingVM.penSizeReadOnly.value)
                             //if you update current stroke live here not on DragEnd,
                             // then you do not need a second loop
-                            strokes = strokes.dropLast(1) + listOf(currentStroke)
+                            //strokes = strokes.dropLast(1) + listOf(currentStroke)
+                            drawingVM.addToStroke(change.position)
                         },
                         onDragEnd = {
                             //strokes = strokes + listOf(currentStroke)
-                            currentStroke = emptyList()
+                            //currentStroke = emptyList()
+                            drawingVM.endStroke()
                         }
                     )
                 }
@@ -111,10 +118,14 @@ fun DrawingCanvas(drawingVM: DrawingViewModel) {
             strokes.forEach { stroke ->
                 for (i in 0 until stroke.size - 1) {
                     drawLine(
-                        color = stroke[i].second,
-                        start = stroke[i].first,
-                        end = stroke[i + 1].first,
-                        strokeWidth = stroke[i].third
+                        //color = stroke[i].second,
+                        //start = stroke[i].first,
+                        //end = stroke[i + 1].first,
+                        //strokeWidth = stroke[i].third
+                        color = stroke[i].color,
+                        start = stroke[i].offset,
+                        end = stroke[i + 1].offset,
+                        strokeWidth = stroke[i].size
                     )
                 }
             }
