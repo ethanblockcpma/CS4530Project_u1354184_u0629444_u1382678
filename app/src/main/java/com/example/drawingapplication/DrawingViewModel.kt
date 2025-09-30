@@ -10,7 +10,8 @@ import kotlinx.coroutines.flow.StateFlow
 data class DrawingPoint(
     val offset : Offset,
     val color : Color,
-    val size : Float
+    val size : Float,
+    val shape : String
 )
 
 class DrawingViewModel : ViewModel() {
@@ -62,13 +63,13 @@ class DrawingViewModel : ViewModel() {
     val currentStrokeReadOnly : StateFlow<List<DrawingPoint>> = currentStroke
 
     fun startStoke(offset : Offset){
-        val drawingPoint = DrawingPoint(offset, penColor.value, penSize.value)
+        val drawingPoint = DrawingPoint(offset, penColor.value, penSize.value, penShape.value)
         currentStroke.value = listOf(drawingPoint)
         strokes.value = strokes.value + listOf(currentStroke.value)
     }
 
     fun addToStroke(offset : Offset){
-        val drawingPoint = DrawingPoint(offset, penColor.value, penSize.value)
+        val drawingPoint = DrawingPoint(offset, penColor.value, penSize.value, penShape.value)
         currentStroke.value = currentStroke.value + drawingPoint
         strokes.value = strokes.value.dropLast(1) + listOf(currentStroke.value)
     }

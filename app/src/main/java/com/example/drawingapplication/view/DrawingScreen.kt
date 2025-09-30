@@ -43,6 +43,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.drawscope.draw
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.example.drawingapplication.DrawingViewModel
@@ -114,6 +115,7 @@ fun DrawingCanvas(drawingVM: DrawingViewModel) {
                     )
                 }
         ) {
+            /**
             // Draw all completed strokes
             strokes.forEach { stroke ->
                 for (i in 0 until stroke.size - 1) {
@@ -128,6 +130,39 @@ fun DrawingCanvas(drawingVM: DrawingViewModel) {
                         strokeWidth = stroke[i].size
                     )
                 }
+            }**/
+            strokes.forEach { stroke ->
+                stroke.forEach { point ->
+                    if(point.shape == "circle") {
+                        drawCircle(
+                            color = point.color,
+                            radius = point.size / 2,
+                            center = point.offset
+                        )
+                    } else if (point.shape == "rectangle") {
+                        drawRect(
+                            color = point.color,
+                            topLeft = Offset(point.offset.x - point.size/2, point.offset.y - point.size/2),
+                            size = Size(point.size, point.size)
+                        )
+                    } else if (point.shape == "oval"){
+                        drawOval(
+                            color = point.color,
+                            topLeft = Offset(point.offset.x - point.size/2, point.offset.y - point.size/3),
+                            size = Size(point.size, point.size * 0.66f)
+                        )
+                    }
+                }
+
+                for (i in 0 until stroke.size - 1) {
+                    drawLine(
+                        color = stroke[i].color,
+                        start = stroke[i].offset,
+                        end = stroke[i + 1].offset,
+                        strokeWidth = stroke[i].size
+                    )
+                }
+
             }
         }
         Row(
@@ -185,8 +220,28 @@ fun DrawingCanvas(drawingVM: DrawingViewModel) {
                         }
                     }
                 } else if (options == DrawingViewModel.PenOptions.SHAPE) {
+
+                    val shapes = listOf("circle", "rectangle", "oval")
+
+                    Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Center) {
+                        Row(
+                            Modifier.padding(8.dp).fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            shapes.forEach { shape ->
+                                Button(
+                                    onClick = { drawingVM.changePenShape(shape) },
+                                    Modifier.padding(5.dp)
+                                ) {
+                                    Text(shape)
+                                }
+                            }
+
+                        }
+                    }
+
                     // TODO implement shape options
-                    Text("shape options")
+                    //Text("shape options")
                 } else if (options == DrawingViewModel.PenOptions.SIZE) {
                     // TODO the biggest size looks pretty weird, should maybe improve
                     Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Center) {
