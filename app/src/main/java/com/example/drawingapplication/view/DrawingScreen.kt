@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.viewModels
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -42,8 +41,6 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.drawscope.draw
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.example.drawingapplication.DrawingViewModel
@@ -66,9 +63,7 @@ class DrawingScreen : ComponentActivity() {
 
 @Composable
 fun DrawingCanvas(drawingVM: DrawingViewModel) {
-    //var strokes by remember { mutableStateOf(listOf<List<Triple<Offset, Color, Float>>>()) }
     val strokes by drawingVM.strokesReadOnly.collectAsState()
-    var currentStroke by remember { mutableStateOf(listOf<Triple<Offset, Color, Float>>()) }
 
     Column(
         modifier = Modifier
@@ -82,55 +77,23 @@ fun DrawingCanvas(drawingVM: DrawingViewModel) {
                 .width(350.dp)
                 .background(Color.LightGray)
                 .clipToBounds()
-                //We capture touch input with
-                // pointerInput and detectDragGestures.
+                //We capture touch input with pointerInput and detectDragGestures.
                 .pointerInput(Unit) {
                     detectDragGestures(
                         onDragStart = { offset ->
-                           // currentStroke = listOf(Triple(
-                           //     offset,
-                            //    drawingVM.penColorReadOnly.value,
-                            //    drawingVM.penSizeReadOnly.value))
-                            //if you update current stroke live here not on DragEnd,
-                            // then you do not need a second loop
-                            //strokes = strokes + listOf(currentStroke)
                             drawingVM.startStoke(offset)
                         },
                         onDrag = { change, x ->
                             change.consume()
-                            //currentStroke = currentStroke + Triple(
-                            //    change.position,
-                            //    drawingVM.penColorReadOnly.value,
-                            //    drawingVM.penSizeReadOnly.value)
-                            //if you update current stroke live here not on DragEnd,
-                            // then you do not need a second loop
-                            //strokes = strokes.dropLast(1) + listOf(currentStroke)
                             drawingVM.addToStroke(change.position)
                         },
                         onDragEnd = {
-                            //strokes = strokes + listOf(currentStroke)
-                            //currentStroke = emptyList()
                             drawingVM.endStroke()
                         }
                     )
                 }
         ) {
-            /**
             // Draw all completed strokes
-            strokes.forEach { stroke ->
-                for (i in 0 until stroke.size - 1) {
-                    drawLine(
-                        //color = stroke[i].second,
-                        //start = stroke[i].first,
-                        //end = stroke[i + 1].first,
-                        //strokeWidth = stroke[i].third
-                        color = stroke[i].color,
-                        start = stroke[i].offset,
-                        end = stroke[i + 1].offset,
-                        strokeWidth = stroke[i].size
-                    )
-                }
-            }**/
             strokes.forEach { stroke ->
                 stroke.forEach { point ->
                     if(point.shape == "circle") {
@@ -168,7 +131,6 @@ fun DrawingCanvas(drawingVM: DrawingViewModel) {
         Row(
             modifier = Modifier.padding(vertical = 16.dp),
         ) {
-            // TODO replace text on buttons with icons
             Button(
                 onClick = { drawingVM.changeOrTogglePenOptions(DrawingViewModel.PenOptions.COLOR) },
                 modifier = Modifier.padding(5.dp)
@@ -239,11 +201,7 @@ fun DrawingCanvas(drawingVM: DrawingViewModel) {
 
                         }
                     }
-
-                    // TODO implement shape options
-                    //Text("shape options")
                 } else if (options == DrawingViewModel.PenOptions.SIZE) {
-                    // TODO the biggest size looks pretty weird, should maybe improve
                     Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Center) {
                         Row(
                             Modifier.padding(8.dp).fillMaxWidth(),
@@ -273,7 +231,7 @@ fun DrawingCanvas(drawingVM: DrawingViewModel) {
         Row(
             modifier = Modifier.padding(vertical = 16.dp),
         ) {
-            // TODO link buttons to ViewModel functionality
+            // TODO link buttons to ViewModel functionality; this is required in Phase 2
             Button(onClick = { placeholder() }, modifier = Modifier.padding(5.dp)) {
                 Text("Home")
             }
@@ -284,76 +242,8 @@ fun DrawingCanvas(drawingVM: DrawingViewModel) {
     }
 }
 
+// Will be removed in Phase 2
 fun placeholder(){}
 fun openPenOptions(type: Int) {
 
-}
-
-// Below is currently unused code copied from the drawing demo
-enum class BrushType {
-    LINE, CIRCLE, RECTANGLE
-}
-
-@Composable
-fun DrawingCanvasWithPoints(brushType: BrushType = BrushType.CIRCLE) {
-    var strokes by remember { mutableStateOf(listOf<List<Offset>>()) }
-    var currentStroke by remember { mutableStateOf<List<Offset>>(emptyList()) }
-
-    Canvas(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-            .pointerInput(Unit) {
-                detectDragGestures(
-                    onDragStart = { offset ->
-                        currentStroke = listOf(offset)
-                        strokes = strokes + listOf(currentStroke)
-                    },
-                    onDrag = { change, _ ->
-                        change.consume()
-                        currentStroke = currentStroke + change.position
-                        strokes = strokes.dropLast(1) + listOf(currentStroke)
-                    },
-                    onDragEnd = { currentStroke = emptyList() }
-                )
-            }
-    ) {
-        strokes.forEach { stroke ->
-            when (brushType) {
-                BrushType.LINE -> {
-                    for (i in 0 until stroke.size - 1) {
-                        drawLine(Color.Black, stroke[i], stroke[i + 1], strokeWidth = 4f)
-                    }
-                }
-                BrushType.CIRCLE -> {
-                    stroke.forEach { point ->
-                        drawCircle(Color.Red, radius = 15f, center = point)
-                    }
-                }
-                BrushType.RECTANGLE -> {
-                    stroke.forEach { point ->
-                        drawRect(
-                            Color.Black,
-                            topLeft = Offset(point.x - 8f, point.y - 8f),
-                            size = Size(16f, 16f)
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun DrawCircle() {
-    Column (Modifier
-        .fillMaxWidth()
-        .padding(16.dp)) {
-        Canvas(Modifier.size(100.dp)) {
-            drawCircle(
-                color = Color.Blue,
-                radius = size.minDimension / 2
-            )
-        }
-    }
 }

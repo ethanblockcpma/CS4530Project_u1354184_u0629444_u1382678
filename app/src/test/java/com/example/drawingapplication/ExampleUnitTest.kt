@@ -6,54 +6,57 @@ import org.junit.Test
 
 import org.junit.Assert.*
 import com.example.drawingapplication.DrawingViewModel
-/**
- * Example local unit test, which will execute on the development machine (host).
- *
- * See [testing documentation](http://d.android.com/tools/testing).
- */
-class ExampleUnitTest {
-    @Test
-    fun addition_isCorrect() {
-        assertEquals(4, 2 + 2)
-    }
 
+class DrawingApplicationUnitTest {
     @Test
-    fun colorChangeCorrectly(){
+    fun changeColorCorrectly(){
+        // Test initial color is set correctly
         val vm = DrawingViewModel()
-
         assertEquals(Color.Black, vm.penColorReadOnly.value)
 
+        // Test changing color updates correctly
         vm.changePenColor(Color.Blue)
-
         assertEquals(Color.Blue, vm.penColorReadOnly.value)
     }
 
     @Test
     fun changeSizeCorrectly(){
+        // Test initial size is set correctly
         val vm = DrawingViewModel()
         assertEquals(8f, vm.penSizeReadOnly.value)
 
+        // Test changing size updates correctly
         vm.changePenSize(20f)
         assertEquals(20f, vm.penSizeReadOnly.value)
     }
 
     @Test
     fun changeShapeCorrectly(){
+        // Test initial shape is set correctly
         val vm = DrawingViewModel()
         assertEquals("circle", vm.penShapeReadOnly.value)
 
+        // Test changing shape updates correctly
         vm.changePenShape("rectangle")
         assertEquals("rectangle", vm.penShapeReadOnly.value)
     }
 
     @Test
-    fun toggleCorrectly(){
+    fun toggleAndChangePenOptionsCorrectly(){
+        // Test that no options are shown initially
         val vm = DrawingViewModel()
+        assertEquals(DrawingViewModel.PenOptions.NONE, vm.penOptionsShownReadOnly.value)
+
+        // Test showing pen options shown updates correctly
+        vm.changeOrTogglePenOptions(DrawingViewModel.PenOptions.SHAPE)
+        assertEquals(DrawingViewModel.PenOptions.SHAPE, vm.penOptionsShownReadOnly.value)
+
+        // Test changing pen options from one to another updates correctly
         vm.changeOrTogglePenOptions(DrawingViewModel.PenOptions.COLOR)
         assertEquals(DrawingViewModel.PenOptions.COLOR, vm.penOptionsShownReadOnly.value)
 
+        // Test selecting the currently selected pen options toggles the menu off
         vm.changeOrTogglePenOptions(DrawingViewModel.PenOptions.COLOR)
-
         assertEquals(DrawingViewModel.PenOptions.NONE, vm.penOptionsShownReadOnly.value)
     }
 

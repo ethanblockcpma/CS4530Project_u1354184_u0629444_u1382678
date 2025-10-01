@@ -77,5 +77,4 @@ class DrawingViewModel : ViewModel() {
     fun endStroke(){
         currentStroke.value = emptyList()
     }
-
 }
