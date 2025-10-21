@@ -46,23 +46,10 @@ import androidx.compose.ui.unit.dp
 import com.example.drawingapplication.DrawingViewModel
 import com.example.drawingapplication.ui.theme.DrawingApplicationTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
-
-class DrawingScreen : ComponentActivity() {
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            DrawingApplicationTheme {
-                val drawingVM:DrawingViewModel = viewModel()
-                DrawingCanvas(drawingVM)
-            }
-        }
-    }
-}
+import androidx.navigation.NavHostController
 
 @Composable
-fun DrawingCanvas(drawingVM: DrawingViewModel) {
+fun DrawingCanvas(navController : NavHostController, drawingVM: DrawingViewModel = viewModel()) {
     val strokes by drawingVM.strokesReadOnly.collectAsState()
 
     Column(
