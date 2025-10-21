@@ -3,9 +3,14 @@ package com.example.drawingapplication
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
+import com.example.drawingapplication.data.Drawing
+import com.example.drawingapplication.data.DrawingRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 data class DrawingPoint(
     val offset : Offset,
@@ -14,7 +19,7 @@ data class DrawingPoint(
     val shape : String
 )
 
-class DrawingViewModel : ViewModel() {
+class DrawingViewModel(private val repository: DrawingRepository) : ViewModel() {
 
     //Drawing state
     private val penColor = MutableStateFlow(Color.Black)
@@ -76,5 +81,30 @@ class DrawingViewModel : ViewModel() {
 
     fun endStroke(){
         currentStroke.value = emptyList()
+    }
+
+    private val _allDrawings = MutableStateFlow<List<Drawing>>(emptyList())
+    val allDrawings: StateFlow<List<Drawing>> = _allDrawings.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            repository.allDrawings.collect {
+                _allDrawings.value = it
+            }
+        }
+    }
+
+    fun insertDrawing(drawing: Drawing) = viewModelScope.launch {
+        repository.insertDrawing(drawing)
+    }
+}
+
+class DrawingViewModelFactory(private val repository: DrawingRepository) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(DrawingViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return DrawingViewModel(repository) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
