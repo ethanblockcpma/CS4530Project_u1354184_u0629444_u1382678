@@ -46,23 +46,10 @@ import androidx.compose.ui.unit.dp
 import com.example.drawingapplication.DrawingViewModel
 import com.example.drawingapplication.ui.theme.DrawingApplicationTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
-
-class DrawingScreen : ComponentActivity() {
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            DrawingApplicationTheme {
-                val drawingVM:DrawingViewModel = viewModel()
-                DrawingCanvas(drawingVM)
-            }
-        }
-    }
-}
+import androidx.navigation.NavHostController
 
 @Composable
-fun DrawingCanvas(drawingVM: DrawingViewModel) {
+fun DrawingCanvas(navController: NavHostController, drawingVM: DrawingViewModel) {
     val strokes by drawingVM.strokesReadOnly.collectAsState()
 
     Column(
@@ -232,7 +219,7 @@ fun DrawingCanvas(drawingVM: DrawingViewModel) {
             modifier = Modifier.padding(vertical = 16.dp),
         ) {
             // TODO link buttons to ViewModel functionality; this is required in Phase 2
-            Button(onClick = { placeholder() }, modifier = Modifier.padding(5.dp)) {
+            Button(onClick = { navController.navigate("main") }, modifier = Modifier.padding(5.dp)) {
                 Text("Home")
             }
             Button(onClick = { placeholder() }, modifier = Modifier.padding(5.dp)) {

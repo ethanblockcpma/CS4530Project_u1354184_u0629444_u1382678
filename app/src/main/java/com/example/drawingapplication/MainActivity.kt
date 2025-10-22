@@ -21,7 +21,9 @@ import com.example.drawingapplication.ui.theme.DrawingApplicationTheme
 import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.runtime.*
-import com.example.drawingapplication.view.DrawingScreen
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
+import com.example.drawingapplication.navigation.AppNavHost
 
 class MainActivity : ComponentActivity() {
 
@@ -38,29 +40,20 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             DrawingApplicationTheme {
-                SplashScreen(
-                    onSplashComplete = {
-                        loadDrawingScreen()
-                    }
-                )
+                val navController = rememberNavController()
+                AppNavHost(navController, drawingViewModel)
             }
         }
-    }
-
-    // TODO For now we go straight to the drawing screen because the main screen isn't implemented yet
-    fun loadDrawingScreen() {
-        val intent = Intent(this, DrawingScreen::class.java)
-        startActivity(intent)
     }
 }
 
 @Composable
-fun SplashScreen(onSplashComplete: () -> Unit ){
+fun SplashScreen(navController : NavHostController){
     var displayText by remember { mutableStateOf("Drawing App") }
 
     LaunchedEffect(Unit){
         delay(2000)
-        onSplashComplete()
+        navController.navigate("main")
     }
 
     Box(
