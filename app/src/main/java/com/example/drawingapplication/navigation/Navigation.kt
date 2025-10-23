@@ -17,7 +17,7 @@ fun AppNavHost(navController: NavHostController, drawingViewModel: DrawingViewMo
         }
 
         composable("main") {
-            MainScreen(navController)
+            MainScreen(navController, drawingViewModel)
         }
 
         composable("drawing") {
