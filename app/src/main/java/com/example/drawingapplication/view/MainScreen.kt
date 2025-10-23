@@ -29,7 +29,7 @@ fun MainScreen(navController: NavHostController, drawingVM: DrawingViewModel) {
         Text("My Drawings", fontSize = 32.sp, modifier = Modifier.padding(bottom = 32.dp))
         LazyColumn(modifier = Modifier.padding(bottom = 32.dp)) {
             items(drawingsList) {
-                Text("${it.title}")
+                Text(it.title)
             }
         }
         Button(onClick = { navController.navigate("drawing") }) {
