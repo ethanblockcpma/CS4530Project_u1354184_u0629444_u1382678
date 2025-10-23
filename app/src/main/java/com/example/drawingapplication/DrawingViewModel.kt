@@ -1,16 +1,22 @@
 package com.example.drawingapplication
 
+import android.content.Context
+import android.graphics.Bitmap
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.drawingapplication.data.Drawing
 import com.example.drawingapplication.data.DrawingRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileOutputStream
+import java.util.UUID
 
 data class DrawingPoint(
     val offset : Offset,
@@ -97,6 +103,53 @@ class DrawingViewModel(private val repository: DrawingRepository) : ViewModel() 
     fun insertDrawing(drawing: Drawing) = viewModelScope.launch {
         repository.insertDrawing(drawing)
     }
+
+    fun saveDrawing(context : Context){
+        viewModelScope.launch{
+            val bitmap = Bitmap.createBitmap(350,350,Bitmap.Config.ARGB_8888)
+            val canvas = android.graphics.Canvas(bitmap)
+
+            canvas.drawColor(android.graphics.Color.LTGRAY)
+            val paint = android.graphics.Paint()
+
+            strokes.value.forEach { stroke ->
+                for (i in 0 until stroke.size - 1) {
+                    paint.color = android.graphics.Color.argb(
+                        (stroke[i].color.alpha * 255).toInt(),
+                        (stroke[i].color.red * 255).toInt(),
+                        (stroke[i].color.green * 255).toInt(),
+                        (stroke[i].color.blue * 255).toInt()
+                    )
+                    paint.strokeWidth = stroke[i].size
+                    canvas.drawLine(
+                        stroke[i].offset.x,
+                        stroke[i].offset.y,
+                        stroke[i + 1].offset.x,
+                        stroke[i + 1].offset.y,
+                        paint
+                    )
+                }
+
+            }
+
+            // Save to file
+            val count = allDrawings.value.size + 1
+            val filename = "Drawing${count}.png"
+            val title = "Drawing${count}"
+            val file = File(context.filesDir, filename)
+            FileOutputStream(file).use { out ->
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+            }
+
+            // Save to database
+            repository.insertDrawing(com.example.drawingapplication.data.Drawing(
+                title = title,
+                filePath = file.absolutePath
+            ))
+
+        }
+    }
+
 }
 
 class DrawingViewModelFactory(private val repository: DrawingRepository) : ViewModelProvider.Factory {

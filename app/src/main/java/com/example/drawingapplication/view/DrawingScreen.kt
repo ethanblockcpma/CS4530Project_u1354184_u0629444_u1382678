@@ -42,6 +42,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.drawingapplication.DrawingViewModel
 import com.example.drawingapplication.ui.theme.DrawingApplicationTheme
@@ -222,15 +223,10 @@ fun DrawingCanvas(navController: NavHostController, drawingVM: DrawingViewModel)
             Button(onClick = { navController.navigate("main") }, modifier = Modifier.padding(5.dp)) {
                 Text("Home")
             }
-            Button(onClick = { placeholder() }, modifier = Modifier.padding(5.dp)) {
+            val context = LocalContext.current
+            Button(onClick = { drawingVM.saveDrawing(context) }, modifier = Modifier.padding(5.dp)) {
                 Text("Save")
             }
         }
     }
-}
-
-// Will be removed in Phase 2
-fun placeholder(){}
-fun openPenOptions(type: Int) {
-
 }

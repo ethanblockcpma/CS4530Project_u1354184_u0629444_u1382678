@@ -6,8 +6,13 @@ import org.junit.Test
 
 import org.junit.Assert.*
 import com.example.drawingapplication.DrawingViewModel
+import com.example.drawingapplication.data.DrawingRepository
+import kotlinx.coroutines.flow.flowOf
+import org.junit.Before
+import org.mockito.Mockito.mock
 
 class DrawingApplicationUnitTest {
+
     @Test
     fun changeColorCorrectly(){
         // Test initial color is set correctly
