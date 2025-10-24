@@ -227,6 +227,9 @@ fun DrawingCanvas(navController: NavHostController, drawingVM: DrawingViewModel)
             Button(onClick = { drawingVM.saveDrawing(context) }, modifier = Modifier.padding(5.dp)) {
                 Text("Save")
             }
+            Button(onClick = { drawingVM.shareDrawing(context) }, modifier = Modifier.padding(5.dp)) {
+                Text("Share")
+            }
         }
     }
 }

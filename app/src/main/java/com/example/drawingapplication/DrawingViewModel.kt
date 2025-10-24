@@ -1,9 +1,13 @@
 package com.example.drawingapplication
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.core.content.ContextCompat.startActivity
+import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -104,61 +108,75 @@ class DrawingViewModel(private val repository: DrawingRepository) : ViewModel() 
         repository.insertDrawing(drawing)
     }
 
+    fun getDrawingAsPng(context: Context): File {
+        // was getting weird ratio issues, convert dp -> pixels here
+        val density = context.resources.displayMetrics.density
+        val widthpx = (350*density).toInt()
+        val heightpx = (350*density).toInt()
+
+        //create bitmap with correct size, and a canvas to draw on that new bitmap
+        val bitmap = Bitmap.createBitmap(widthpx,heightpx,Bitmap.Config.ARGB_8888)
+        val canvas = android.graphics.Canvas(bitmap)
+
+        //background
+        canvas.drawColor(android.graphics.Color.LTGRAY)
+        val paint = android.graphics.Paint()
+
+        //loop thru saved strokes, reconstruct the drawing on this bitmap that will be saved
+        strokes.value.forEach { stroke ->
+            for (i in 0 until stroke.size - 1) {
+                paint.color = android.graphics.Color.argb(
+                    (stroke[i].color.alpha * 255).toInt(),
+                    (stroke[i].color.red * 255).toInt(),
+                    (stroke[i].color.green * 255).toInt(),
+                    (stroke[i].color.blue * 255).toInt()
+                )
+                paint.strokeWidth = stroke[i].size
+                canvas.drawLine(
+                    stroke[i].offset.x,
+                    stroke[i].offset.y,
+                    stroke[i + 1].offset.x,
+                    stroke[i + 1].offset.y,
+                    paint
+                )
+            }
+
+        }
+
+        //save to bitmap as png file
+        val count = allDrawings.value.size + 1
+        val filename = "Drawing${count}.png"
+        val title = "Drawing${count}"
+        val file = File(context.filesDir, filename)
+        FileOutputStream(file).use { out ->
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+        }
+        return file
+    }
+
     fun saveDrawing(context : Context){
         viewModelScope.launch{
-
-            // was getting weird ratio issues, convert dp -> pixels here
-            val density = context.resources.displayMetrics.density
-            val widthpx = (350*density).toInt()
-            val heightpx = (350*density).toInt()
-
-            //create bitmap with correct size, and a canvas to draw on that new bitmap
-            val bitmap = Bitmap.createBitmap(widthpx,heightpx,Bitmap.Config.ARGB_8888)
-            val canvas = android.graphics.Canvas(bitmap)
-
-            //background
-            canvas.drawColor(android.graphics.Color.LTGRAY)
-            val paint = android.graphics.Paint()
-
-            //loop thru saved strokes, reconstruct the drawing on this bitmap that will be saved
-            strokes.value.forEach { stroke ->
-                for (i in 0 until stroke.size - 1) {
-                    paint.color = android.graphics.Color.argb(
-                        (stroke[i].color.alpha * 255).toInt(),
-                        (stroke[i].color.red * 255).toInt(),
-                        (stroke[i].color.green * 255).toInt(),
-                        (stroke[i].color.blue * 255).toInt()
-                    )
-                    paint.strokeWidth = stroke[i].size
-                    canvas.drawLine(
-                        stroke[i].offset.x,
-                        stroke[i].offset.y,
-                        stroke[i + 1].offset.x,
-                        stroke[i + 1].offset.y,
-                        paint
-                    )
-                }
-
-            }
-
-            //save to bitmap as png file
-            val count = allDrawings.value.size + 1
-            val filename = "Drawing${count}.png"
-            val title = "Drawing${count}"
-            val file = File(context.filesDir, filename)
-            FileOutputStream(file).use { out ->
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
-            }
-
+            val file = getDrawingAsPng(context)
             //save to db (metadata stuff)
             repository.insertDrawing(com.example.drawingapplication.data.Drawing(
-                title = title,
+                title = file.name,
                 filePath = file.absolutePath
             ))
-
         }
     }
 
+    fun shareDrawing(context: Context) {
+        val file = getDrawingAsPng(context)
+        val uri =  FileProvider.getUriForFile(context, context.getApplicationContext().getPackageName() + ".fileprovider", file);
+        val sendIntent: Intent = Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_STREAM, uri)
+            type = "image/png"
+        }
+
+        val shareIntent = Intent.createChooser(sendIntent, null)
+        context.startActivity(shareIntent)
+    }
 }
 
 class DrawingViewModelFactory(private val repository: DrawingRepository) : ViewModelProvider.Factory {
