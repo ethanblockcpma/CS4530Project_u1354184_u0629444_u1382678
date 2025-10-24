@@ -1,9 +1,12 @@
 package com.example.drawingapplication.view
 
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -41,6 +44,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -48,10 +52,22 @@ import com.example.drawingapplication.DrawingViewModel
 import com.example.drawingapplication.ui.theme.DrawingApplicationTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import coil.compose.AsyncImagePainter
+import coil.compose.rememberAsyncImagePainter
+import java.io.File
+
 
 @Composable
 fun DrawingCanvas(navController: NavHostController, drawingVM: DrawingViewModel) {
     val strokes by drawingVM.strokesReadOnly.collectAsState()
+
+    var importImageFile = remember { mutableStateOf<File?>(null) }
+    val imageSelectLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        importImageFile.value = File(uri?.path)
+        // We need to somehow use a painter to draw on the canvas
+    }
 
     Column(
         modifier = Modifier
@@ -59,6 +75,9 @@ fun DrawingCanvas(navController: NavHostController, drawingVM: DrawingViewModel)
             .padding(vertical = 40.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Button(onClick = {imageSelectLauncher.launch("image/*")}, modifier = Modifier.padding(5.dp)) {
+            Text("Import image from gallery")
+        }
         Canvas(
             modifier = Modifier
                 .height(350.dp)
@@ -84,7 +103,7 @@ fun DrawingCanvas(navController: NavHostController, drawingVM: DrawingViewModel)
             // Draw all completed strokes
             strokes.forEach { stroke ->
                 stroke.forEach { point ->
-                    if(point.shape == "circle") {
+                    if (point.shape == "circle") {
                         drawCircle(
                             color = point.color,
                             radius = point.size / 2,
@@ -93,13 +112,19 @@ fun DrawingCanvas(navController: NavHostController, drawingVM: DrawingViewModel)
                     } else if (point.shape == "rectangle") {
                         drawRect(
                             color = point.color,
-                            topLeft = Offset(point.offset.x - point.size/2, point.offset.y - point.size/2),
+                            topLeft = Offset(
+                                point.offset.x - point.size / 2,
+                                point.offset.y - point.size / 2
+                            ),
                             size = Size(point.size, point.size)
                         )
-                    } else if (point.shape == "oval"){
+                    } else if (point.shape == "oval") {
                         drawOval(
                             color = point.color,
-                            topLeft = Offset(point.offset.x - point.size/2, point.offset.y - point.size/3),
+                            topLeft = Offset(
+                                point.offset.x - point.size / 2,
+                                point.offset.y - point.size / 3
+                            ),
                             size = Size(point.size, point.size * 0.66f)
                         )
                     }
@@ -113,7 +138,6 @@ fun DrawingCanvas(navController: NavHostController, drawingVM: DrawingViewModel)
                         strokeWidth = stroke[i].size
                     )
                 }
-
             }
         }
         Row(
@@ -219,7 +243,6 @@ fun DrawingCanvas(navController: NavHostController, drawingVM: DrawingViewModel)
         Row(
             modifier = Modifier.padding(vertical = 16.dp),
         ) {
-            // TODO link buttons to ViewModel functionality; this is required in Phase 2
             Button(onClick = { navController.navigate("main") }, modifier = Modifier.padding(5.dp)) {
                 Text("Home")
             }
