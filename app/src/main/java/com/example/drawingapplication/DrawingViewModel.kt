@@ -165,16 +165,26 @@ class DrawingViewModel(private val repository: DrawingRepository) : ViewModel() 
     }
 
     fun shareDrawing(context: Context) {
-        val file = getDrawingAsPng(context)
-        val uri =  FileProvider.getUriForFile(context, context.getApplicationContext().getPackageName() + ".fileprovider", file);
-        val sendIntent: Intent = Intent().apply {
-            action = Intent.ACTION_SEND
-            putExtra(Intent.EXTRA_STREAM, uri)
-            type = "image/png"
-        }
+        viewModelScope.launch {
+            val file = getDrawingAsPng(context)
+            repository.insertDrawing(com.example.drawingapplication.data.Drawing(
+                title = file.name,
+                filePath = file.absolutePath
+            ))
+            val uri = FileProvider.getUriForFile(
+                context,
+                context.getApplicationContext().getPackageName() + ".fileprovider",
+                file
+            );
+            val sendIntent: Intent = Intent().apply {
+                action = Intent.ACTION_SEND
+                putExtra(Intent.EXTRA_STREAM, uri)
+                type = "image/png"
+            }
 
-        val shareIntent = Intent.createChooser(sendIntent, null)
-        context.startActivity(shareIntent)
+            val shareIntent = Intent.createChooser(sendIntent, null)
+            context.startActivity(shareIntent)
+        }
     }
 }
 
