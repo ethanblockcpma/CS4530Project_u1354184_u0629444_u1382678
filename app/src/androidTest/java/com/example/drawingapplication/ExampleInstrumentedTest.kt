@@ -6,6 +6,8 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.drawingapplication.data.DrawingDatabase
 import com.example.drawingapplication.data.DrawingRepository
+import androidx.navigation.testing.TestNavHostController
+
 
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -13,6 +15,19 @@ import org.junit.runner.RunWith
 import org.junit.Assert.*
 import org.junit.Before
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithContentDescription
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.navigation.compose.ComposeNavigator
+import com.example.drawingapplication.ui.theme.DrawingApplicationTheme
+import com.example.drawingapplication.view.DrawingCanvas
+import com.example.drawingapplication.view.MainScreen
+
+import org.junit.After
+import org.junit.Rule
 
 
 /**
@@ -24,14 +39,30 @@ import androidx.compose.ui.graphics.Color
 class ExampleInstrumentedTest {
 
     private lateinit var vm : DrawingViewModel
+    private lateinit var db : DrawingDatabase
+    private lateinit var repo : DrawingRepository
+
+    private lateinit var navController : TestNavHostController
+
+
+    @get:Rule
+    val composeTestRule = createComposeRule()
 
     @Before
     fun setup(){
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val db = DrawingDatabase.getDatabase(context)
-        val repo = DrawingRepository(db.drawingDao())
+        db = DrawingDatabase.getDatabase(context)
+        repo = DrawingRepository(db.drawingDao())
         vm = DrawingViewModel(repo)
+
     }
+
+    @After
+    fun testsDone(){
+        db.clearAllTables()
+        db.close()
+    }
+
 
     @Test
     fun changeColorCorrectly(){
@@ -73,6 +104,96 @@ class ExampleInstrumentedTest {
         vm.addToStroke(Offset(15f, 25f))
         assertEquals(2, vm.strokesReadOnly.value[0].size)
     }
+
+    // navigation tests
+
+    @Test
+    fun mainScreenDisplaysTitle() {
+        composeTestRule.setContent {
+            navController = TestNavHostController(LocalContext.current)
+            navController.navigatorProvider.addNavigator(ComposeNavigator())
+            DrawingApplicationTheme {
+                MainScreen(navController, vm)
+            }
+        }
+
+        composeTestRule.onNodeWithText("My Drawings").assertIsDisplayed()
+    }
+
+    @Test
+    fun mainScreenDisplaysButton(){
+        composeTestRule.setContent{
+            navController = TestNavHostController(LocalContext.current)
+            navController.navigatorProvider.addNavigator(ComposeNavigator())
+            DrawingApplicationTheme {
+                MainScreen(navController, vm)
+            }
+
+        }
+
+        composeTestRule.onNodeWithText("New Drawing").assertIsDisplayed()
+
+    }
+
+    @Test
+    fun drawingScreenDisplaysAllPenOption(){
+        composeTestRule.setContent{
+            navController = TestNavHostController(LocalContext.current)
+            navController.navigatorProvider.addNavigator(ComposeNavigator())
+            DrawingApplicationTheme {
+                DrawingCanvas(navController, vm)
+            }
+        }
+
+        composeTestRule.onNodeWithText("Colors").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Shape").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Size").assertIsDisplayed()
+    }
+
+    @Test
+    fun drawScreenDisplayNavButtons(){
+        composeTestRule.setContent{
+            navController = TestNavHostController(LocalContext.current)
+            navController.navigatorProvider.addNavigator(ComposeNavigator())
+            DrawingApplicationTheme {
+                DrawingCanvas(navController, vm)
+            }
+
+        }
+
+        composeTestRule.onNodeWithText("Home").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Save").assertIsDisplayed()
+    }
+
+    @Test
+    fun drawScreenColorMenuNotVisible(){
+        composeTestRule.setContent{
+            navController = TestNavHostController(LocalContext.current)
+            navController.navigatorProvider.addNavigator(ComposeNavigator())
+            DrawingApplicationTheme {
+                DrawingCanvas(navController, vm)
+            }
+
+        }
+
+        composeTestRule.onAllNodesWithContentDescription("").fetchSemanticsNodes().size
+    }
+
+    @Test
+    fun drawScreenClickColorMenu(){
+        composeTestRule.setContent{
+            navController = TestNavHostController(LocalContext.current)
+            navController.navigatorProvider.addNavigator(ComposeNavigator())
+            DrawingApplicationTheme {
+                DrawingCanvas(navController, vm)
+            }
+
+        }
+
+        composeTestRule.onNodeWithText("Colors").performClick()
+        composeTestRule.waitForIdle()
+    }
+
 
 
 
