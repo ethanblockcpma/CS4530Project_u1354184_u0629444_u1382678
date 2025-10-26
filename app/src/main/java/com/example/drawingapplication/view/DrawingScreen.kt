@@ -1,11 +1,8 @@
 package com.example.drawingapplication.view
 
+import android.graphics.BitmapFactory
 import android.net.Uri
-import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -33,6 +30,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -44,6 +42,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
@@ -54,6 +53,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 
 
@@ -61,12 +62,22 @@ import java.io.File
 fun DrawingCanvas(navController: NavHostController, drawingVM: DrawingViewModel) {
     val strokes by drawingVM.strokesReadOnly.collectAsState()
 
-    var importImageFile = remember { mutableStateOf<File?>(null) }
+    var selectedUri by remember { mutableStateOf<Uri?>(null) }
+    var imageBitmap by remember { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
+    val context = LocalContext.current
     val imageSelectLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        importImageFile.value = File(uri?.path)
-        // We need to somehow use a painter to draw on the canvas
+        selectedUri = uri
+    }
+
+    LaunchedEffect(selectedUri) {
+        imageBitmap = selectedUri?.let { uri ->
+            val bitmap = withContext(Dispatchers.IO) {
+                context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it) }
+            }
+            bitmap?.asImageBitmap()
+        }
     }
 
     Column(
@@ -100,6 +111,12 @@ fun DrawingCanvas(navController: NavHostController, drawingVM: DrawingViewModel)
                     )
                 }
         ) {
+            imageBitmap?.let {
+                drawImage(
+                    image = it,
+                    topLeft = Offset(0f, 0f)
+                )
+            }
             // Draw all completed strokes
             strokes.forEach { stroke ->
                 stroke.forEach { point ->
