@@ -25,6 +25,10 @@ import androidx.navigation.compose.ComposeNavigator
 import com.example.drawingapplication.ui.theme.DrawingApplicationTheme
 import com.example.drawingapplication.view.DrawingCanvas
 import com.example.drawingapplication.view.MainScreen
+import kotlinx.coroutines.runBlocking
+import com.example.drawingapplication.data.Drawing
+import com.example.drawingapplication.navigation.AppNavHost
+import kotlinx.coroutines.flow.first
 
 import org.junit.After
 import org.junit.Rule
@@ -60,7 +64,6 @@ class ExampleInstrumentedTest {
     @After
     fun testsDone(){
         db.clearAllTables()
-        db.close()
     }
 
 
@@ -105,7 +108,35 @@ class ExampleInstrumentedTest {
         assertEquals(2, vm.strokesReadOnly.value[0].size)
     }
 
-    // navigation tests
+    //* runBlocking from chatGPT
+    @Test
+    fun insertDrawingDB() = runBlocking {
+        val drawing = Drawing(
+            title = "test",
+            filePath = "/test/path.png"
+        )
+
+        repo.insertDrawing(drawing)
+        val drawings = repo.allDrawings.first()
+        assertEquals(1, drawings.size)
+        assertEquals("test", drawings[0].title)
+
+    }
+
+    @Test
+    fun insertMultiDrawings() = runBlocking {
+        repo.insertDrawing(Drawing(title="test1",filePath="/path1.png"))
+        repo.insertDrawing(Drawing(title="test2",filePath="/path2.png"))
+        repo.insertDrawing(Drawing(title="test3",filePath="/path3.png"))
+
+        Thread.sleep(200)
+
+        val drawings = repo.allDrawings.first()
+        assertEquals(3, drawings.size)
+
+    }
+
+    // ui tests
 
     @Test
     fun mainScreenDisplaysTitle() {
@@ -194,6 +225,105 @@ class ExampleInstrumentedTest {
         composeTestRule.waitForIdle()
     }
 
+
+    @Test
+    fun drawScreenCluckShapeMenu(){
+        composeTestRule.setContent{
+            navController = TestNavHostController(LocalContext.current)
+            navController.navigatorProvider.addNavigator(ComposeNavigator())
+            DrawingApplicationTheme {
+                DrawingCanvas(navController, vm)
+            }
+
+        }
+
+        composeTestRule.onNodeWithText("Shape").performClick()
+        composeTestRule.waitForIdle()
+        //shapes now on screen, can assert is displayed
+        composeTestRule.onNodeWithText("circle").assertIsDisplayed()
+        composeTestRule.onNodeWithText("rectangle").assertIsDisplayed()
+        composeTestRule.onNodeWithText("oval").assertIsDisplayed()
+    }
+
+    @Test
+    fun drawScreenToggleWorks(){
+        composeTestRule.setContent{
+            navController = TestNavHostController(LocalContext.current)
+            navController.navigatorProvider.addNavigator(ComposeNavigator())
+            DrawingApplicationTheme {
+                DrawingCanvas(navController, vm)
+            }
+
+        }
+
+        composeTestRule.onNodeWithText("Shape").performClick()
+        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithText("circle").assertIsDisplayed()
+        //click again, confirm shape is no longer there
+        composeTestRule.onNodeWithText("Shape").performClick()
+        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithText("circle").assertDoesNotExist()
+
+    }
+
+
+    // nav test
+
+    @Test
+    fun mainToDrawingCanvas() {
+        composeTestRule.setContent{
+            navController = TestNavHostController(LocalContext.current)
+            navController.navigatorProvider.addNavigator(ComposeNavigator())
+            DrawingApplicationTheme {
+                AppNavHost(navController, vm, startDestination = "main")
+            }
+
+        }
+
+        composeTestRule.onNodeWithText("New Drawing").assertIsDisplayed()
+        composeTestRule.onNodeWithText("New Drawing").performClick()
+        composeTestRule.waitForIdle()
+
+        // after thats clicked, we should be on next screen, able to see 'shape'
+        composeTestRule.onNodeWithText("Shape").assertIsDisplayed()
+    }
+
+    @Test
+    fun drawingCanvasToMain() {
+        composeTestRule.setContent{
+            navController = TestNavHostController(LocalContext.current)
+            navController.navigatorProvider.addNavigator(ComposeNavigator())
+            DrawingApplicationTheme {
+                AppNavHost(navController, vm, startDestination = "drawing")
+            }
+
+        }
+
+        composeTestRule.onNodeWithText("Home").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Home").performClick()
+        composeTestRule.waitForIdle()
+
+        // after thats clicked, we should be on next screen, able to see 'shape'
+        composeTestRule.onNodeWithText("New Drawing").assertIsDisplayed()
+    }
+
+    @Test
+    fun splashToMain() {
+        composeTestRule.setContent{
+            navController = TestNavHostController(LocalContext.current)
+            navController.navigatorProvider.addNavigator(ComposeNavigator())
+            DrawingApplicationTheme {
+                AppNavHost(navController, vm, startDestination = "splash")
+            }
+
+        }
+
+        composeTestRule.onNodeWithText("Drawing App").assertIsDisplayed()
+        composeTestRule.mainClock.advanceTimeBy(2500)
+        composeTestRule.waitForIdle()
+
+        composeTestRule.onNodeWithText("New Drawing").assertIsDisplayed()
+    }
 
 
 
