@@ -14,6 +14,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.drawingapplication.data.Drawing
 import com.example.drawingapplication.data.DrawingRepository
+//import com.google.ai.client.generativeai.BuildConfig
+import com.google.ai.client.generativeai.GenerativeModel
+//import com.example.drawingapplication.BuildConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,6 +32,10 @@ data class DrawingPoint(
 )
 
 class DrawingViewModel(private val repository: DrawingRepository) : ViewModel() {
+
+    //PHASE 3: Creating AI Model
+    private val model = GenerativeModel(modelName = "gemini-2.5-flash",apiKey = BuildConfig.GEMINI_API_KEY)
+
 
     //Drawing state
     private val penColor = MutableStateFlow(Color.Black)

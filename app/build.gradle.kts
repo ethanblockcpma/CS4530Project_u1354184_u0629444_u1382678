@@ -16,6 +16,10 @@ android {
     namespace = "com.example.drawingapplication"
     compileSdk = 36
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     defaultConfig {
         applicationId = "com.example.drawingapplication"
         minSdk = 24
