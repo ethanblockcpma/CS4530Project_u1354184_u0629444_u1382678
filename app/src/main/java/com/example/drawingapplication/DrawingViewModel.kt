@@ -36,6 +36,20 @@ class DrawingViewModel(private val repository: DrawingRepository) : ViewModel() 
     //PHASE 3: Creating AI Model
     private val model = GenerativeModel(modelName = "gemini-2.5-flash",apiKey = BuildConfig.GEMINI_API_KEY)
 
+    //to use:
+    /*
+    fun summarizeText(input: String) {
+        viewModelScope.launch {
+            try {
+                val response = model.generateContent("Summarize this: $input")
+                summaryMutable.value = response.text ?: "No summary"
+            } catch (e: Exception) {
+                summaryMutable.value = "Error: ${e.message}"
+                Log.e("SummarizeError", e.toString())
+            }
+        }
+    }
+    */
 
     //Drawing state
     private val penColor = MutableStateFlow(Color.Black)
