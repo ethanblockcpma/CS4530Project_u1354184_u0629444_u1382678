@@ -5,6 +5,12 @@ plugins {
     alias(libs.plugins.kotlin.ksp)
 }
 
+//read from secrets.properties for API key
+val secretsFile = rootProject.file("secrets.properties")
+val secretsMap = secretsFile.readLines()
+    .map {it.split("=")}
+    .associate {it[0].trim() to it[1].trim() }
+val apiKey = secretsMap["GEMINI_API_KEY"] ?: ""
 
 android {
     namespace = "com.example.drawingapplication"
@@ -18,6 +24,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "GEMINI_API_KEY", "\"$apiKey\"")
     }
 
     buildTypes {
@@ -51,14 +58,17 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
 
-    // Navigation - using demo style
+    // Navigation
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
 
-    // Room - needs KSP
+    // Room
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
-    ksp("androidx.room:room-compiler:2.6.1")  // Changed from annotationProcessor
+    ksp("androidx.room:room-compiler:2.6.1")
+
+    // Ai
+    implementation(libs.google.generativeai)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
