@@ -53,13 +53,30 @@ class DrawingRepository(private val drawingDao: DrawingDao) {
         println("repo function returning now")
         //post req to vision api endpoint w/ key
         try {
+            /*
+            val httpResponse = client.post("https://vision.googleapis.com/v1/images:annotate?key=${BuildConfig.VISION_API_KEY}") {
+                contentType(ContentType.Application.Json)
+                setBody(req)
+            }
+
+            // Get raw JSON text
+            val rawJson = httpResponse.body<String>()
+            println("DEBUG REPO: RAW JSON RESPONSE:")
+            println(rawJson)
+
+            // Parse into your models
+            val response = Json.decodeFromString<VisionResponse>(rawJson)
+
+            println("DEBUG REPO: API call SUCCESS")
+            return response*/
+
             val response = client.post("https://vision.googleapis.com/v1/images:annotate?key=${BuildConfig.VISION_API_KEY}") {
                 contentType(ContentType.Application.Json)
                 setBody(req)
-            }.body<VisionResponse>()
+            }.body<VisionResponse>()  // This uses your configured Json with ignoreUnknownKeys = true
 
             println("DEBUG REPO: API call SUCCESS")
-            println("DEBUG REPO: Response: $response")
+            println("DEBUG REPO: Found ${response.responses.firstOrNull()?.localizedObjectAnnotations?.size ?: 0} objects")
             return response
 
         } catch (e: Exception) {
