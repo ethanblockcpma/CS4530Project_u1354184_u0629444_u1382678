@@ -10,7 +10,7 @@ val secretsFile = rootProject.file("secrets.properties")
 val secretsMap = secretsFile.readLines()
     .map {it.split("=")}
     .associate {it[0].trim() to it[1].trim() }
-val apiKey = secretsMap["GEMINI_API_KEY"] ?: ""
+val apiKey = secretsMap["VISION_API_KEY"] ?: ""
 
 android {
     namespace = "com.example.drawingapplication"
@@ -28,7 +28,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        buildConfigField("String", "GEMINI_API_KEY", "\"$apiKey\"")
+        buildConfigField("String", "VISION_API_KEY", "\"$apiKey\"")
     }
 
     buildTypes {
@@ -71,8 +71,10 @@ dependencies {
     implementation("androidx.room:room-ktx:2.6.1")
     ksp("androidx.room:room-compiler:2.6.1")
 
-    // Ai
-    implementation(libs.google.generativeai)
+    // KTOR for HTTP requests to Vision API
+    implementation("io.ktor:ktor-client-android:2.3.7")
+    implementation("io.ktor:ktor-client-content-negotiation:2.3.7")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.7")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

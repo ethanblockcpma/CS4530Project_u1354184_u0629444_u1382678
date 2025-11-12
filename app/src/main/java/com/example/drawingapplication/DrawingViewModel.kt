@@ -12,10 +12,10 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.drawingapplication.data.DetectedObject
 import com.example.drawingapplication.data.Drawing
 import com.example.drawingapplication.data.DrawingRepository
 //import com.google.ai.client.generativeai.BuildConfig
-import com.google.ai.client.generativeai.GenerativeModel
 //import com.example.drawingapplication.BuildConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
+import java.io.ByteArrayOutputStream
 
 data class DrawingPoint(
     val offset : Offset,
@@ -34,22 +35,7 @@ data class DrawingPoint(
 class DrawingViewModel(private val repository: DrawingRepository) : ViewModel() {
 
     //PHASE 3: Creating AI Model
-    private val model = GenerativeModel(modelName = "gemini-2.5-flash",apiKey = BuildConfig.GEMINI_API_KEY)
-
-    //to use:
-    /*
-    fun summarizeText(input: String) {
-        viewModelScope.launch {
-            try {
-                val response = model.generateContent("Summarize this: $input")
-                summaryMutable.value = response.text ?: "No summary"
-            } catch (e: Exception) {
-                summaryMutable.value = "Error: ${e.message}"
-                Log.e("SummarizeError", e.toString())
-            }
-        }
-    }
-    */
+    //private val model = GenerativeModel(modelName = "gemini-2.5-flash",apiKey = BuildConfig.GEMINI_API_KEY)
 
     //Drawing state
     private val penColor = MutableStateFlow(Color.Black)
@@ -207,6 +193,38 @@ class DrawingViewModel(private val repository: DrawingRepository) : ViewModel() 
             context.startActivity(shareIntent)
         }
     }
+
+    //phase 3 stuff
+
+    //holds the list of objects detected by the api
+    //updates when the image analysis completes, triggering UI to display
+    private val _detectedObjects = MutableStateFlow<List<DetectedObject>>(emptyList())
+    val detectedObjects : StateFlow<List<DetectedObject>> = _detectedObjects.asStateFlow()
+
+    //analyze an image using api
+    fun analyzeImage(bitmap : Bitmap){
+        viewModelScope.launch{
+            try{
+                //convert bitmap to base64 string (needed to send to api)
+                val outputStream = ByteArrayOutputStream()
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
+                val base64Image = android.util.Base64.encodeToString(
+                    outputStream.toByteArray(),
+                    android.util.Base64.DEFAULT
+                )
+
+                //call api
+                val response = repository.analyzePicture(base64Image)
+
+                //extract detected objects from response and update state
+                _detectedObjects.value = response.responses.firstOrNull()?.localizedObjectAnnotations ?: emptyList()
+
+            } catch(e: Exception) {
+
+            }
+        }
+    }
+
 }
 
 class DrawingViewModelFactory(private val repository: DrawingRepository) : ViewModelProvider.Factory {
