@@ -202,10 +202,11 @@ class DrawingViewModel(private val repository: DrawingRepository) : ViewModel() 
     val detectedObjects : StateFlow<List<DetectedObject>> = _detectedObjects.asStateFlow()
 
     //analyze an image using api
-    fun analyzeImage(bitmap : Bitmap){
-        viewModelScope.launch{
-            try{
-                //convert bitmap to base64 string (needed to send to api)
+    fun analyzeImage(bitmap: Bitmap) {
+        println("DEBUG VM: analyzeImage called")
+
+        viewModelScope.launch {
+            try {
                 val outputStream = ByteArrayOutputStream()
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
                 val base64Image = android.util.Base64.encodeToString(
@@ -213,14 +214,23 @@ class DrawingViewModel(private val repository: DrawingRepository) : ViewModel() 
                     android.util.Base64.DEFAULT
                 )
 
-                //call api
+                println("DEBUG VM: Calling repository")
                 val response = repository.analyzePicture(base64Image)
 
-                //extract detected objects from response and update state
+                println("DEBUG VM: Got response")
+                println("DEBUG VM: Response has ${response.responses.size} responses")
+                println("DEBUG VM: First response annotations: ${response.responses.firstOrNull()?.localizedObjectAnnotations?.size}")
+
                 _detectedObjects.value = response.responses.firstOrNull()?.localizedObjectAnnotations ?: emptyList()
 
-            } catch(e: Exception) {
+                println("DEBUG VM: Set detectedObjects to ${_detectedObjects.value.size} objects")
+                _detectedObjects.value.forEach { obj ->
+                    println("DEBUG VM: Object found: ${obj.name} - ${obj.score}")
+                }
 
+            } catch (e: Exception) {
+                println("DEBUG VM: ERROR - ${e.message}")
+                _detectedObjects.value = emptyList()
             }
         }
     }

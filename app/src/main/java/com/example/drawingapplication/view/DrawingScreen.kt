@@ -1,5 +1,6 @@
 package com.example.drawingapplication.view
 
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -56,6 +57,7 @@ import coil.compose.rememberAsyncImagePainter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
+import androidx.compose.ui.graphics.asAndroidBitmap
 
 
 @Composable
@@ -89,6 +91,54 @@ fun DrawingCanvas(navController: NavHostController, drawingVM: DrawingViewModel)
         Button(onClick = {imageSelectLauncher.launch("image/*")}, modifier = Modifier.padding(5.dp)) {
             Text("Import image from gallery")
         }
+
+        // TEMPORARY TEST BUTTON - analyzes current drawing
+        Button(onClick = {
+            // Get the current drawing as a bitmap
+            println("button clicked")
+            val density = context.resources.displayMetrics.density
+            val widthpx = (350*density).toInt()
+            val heightpx = (350*density).toInt()
+            val bitmap = Bitmap.createBitmap(widthpx, heightpx, Bitmap.Config.ARGB_8888)
+            val canvas = android.graphics.Canvas(bitmap)
+            canvas.drawColor(android.graphics.Color.LTGRAY)
+            val paint = android.graphics.Paint()
+
+            // Draw all strokes onto bitmap
+            strokes.forEach { stroke ->
+                for (i in 0 until stroke.size - 1) {
+                    paint.color = android.graphics.Color.argb(
+                        (stroke[i].color.alpha * 255).toInt(),
+                        (stroke[i].color.red * 255).toInt(),
+                        (stroke[i].color.green * 255).toInt(),
+                        (stroke[i].color.blue * 255).toInt()
+                    )
+                    paint.strokeWidth = stroke[i].size
+                    canvas.drawLine(
+                        stroke[i].offset.x, stroke[i].offset.y,
+                        stroke[i + 1].offset.x, stroke[i + 1].offset.y,
+                        paint
+                    )
+                }
+            }
+
+            println("ui calling vm function")
+            // Analyze the bitmap
+            drawingVM.analyzeImage(bitmap)
+        }, modifier = Modifier.padding(5.dp)) {
+            Text("Test API on Drawing")
+        }
+
+        // DISPLAY RESULTS
+        val detectedObjects by drawingVM.detectedObjects.collectAsState()
+        println("DEBUG UI: Detected objects count in UI: ${detectedObjects.size}")
+
+        Text("Detected: ${detectedObjects.size} objects", modifier = Modifier.padding(5.dp))
+        detectedObjects.forEach { obj ->
+            println("DEBUG UI: Displaying object: ${obj.name}")
+            Text("${obj.name}: ${(obj.score * 100).toInt()}%", modifier = Modifier.padding(2.dp))
+        }
+
         Canvas(
             modifier = Modifier
                 .height(350.dp)
