@@ -94,39 +94,15 @@ fun DrawingCanvas(navController: NavHostController, drawingVM: DrawingViewModel)
 
         // TEMPORARY TEST BUTTON - analyzes current drawing
         Button(onClick = {
-            // Get the current drawing as a bitmap
-            println("button clicked")
-            val density = context.resources.displayMetrics.density
-            val widthpx = (350*density).toInt()
-            val heightpx = (350*density).toInt()
-            val bitmap = Bitmap.createBitmap(widthpx, heightpx, Bitmap.Config.ARGB_8888)
-            val canvas = android.graphics.Canvas(bitmap)
-            canvas.drawColor(android.graphics.Color.LTGRAY)
-            val paint = android.graphics.Paint()
-
-            // Draw all strokes onto bitmap
-            strokes.forEach { stroke ->
-                for (i in 0 until stroke.size - 1) {
-                    paint.color = android.graphics.Color.argb(
-                        (stroke[i].color.alpha * 255).toInt(),
-                        (stroke[i].color.red * 255).toInt(),
-                        (stroke[i].color.green * 255).toInt(),
-                        (stroke[i].color.blue * 255).toInt()
-                    )
-                    paint.strokeWidth = stroke[i].size
-                    canvas.drawLine(
-                        stroke[i].offset.x, stroke[i].offset.y,
-                        stroke[i + 1].offset.x, stroke[i + 1].offset.y,
-                        paint
-                    )
-                }
+            imageBitmap?.let {
+                // Convert Compose ImageBitmap to Android Bitmap
+                val androidBitmap = it.asAndroidBitmap()
+                drawingVM.analyzeImage(androidBitmap)
+            } ?: run {
+                println("No image imported to analyze")
             }
-
-            println("ui calling vm function")
-            // Analyze the bitmap
-            drawingVM.analyzeImage(bitmap)
         }, modifier = Modifier.padding(5.dp)) {
-            Text("Test API on Drawing")
+            Text("Test API on Imported Image")
         }
 
         // DISPLAY RESULTS
@@ -164,7 +140,11 @@ fun DrawingCanvas(navController: NavHostController, drawingVM: DrawingViewModel)
             imageBitmap?.let {
                 drawImage(
                     image = it,
-                    topLeft = Offset(0f, 0f)
+                    //topLeft = Offset(0f, 0f) ,
+                    dstSize = androidx.compose.ui.unit.IntSize(
+                        size.width.toInt(),
+                        size.height.toInt()
+                    )
                 )
             }
             // Draw all completed strokes
