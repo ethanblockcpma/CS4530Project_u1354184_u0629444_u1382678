@@ -58,6 +58,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 import androidx.compose.ui.graphics.asAndroidBitmap
+import com.example.drawingapplication.data.BoundingBox
 
 
 @Composable
@@ -67,6 +68,7 @@ fun DrawingCanvas(navController: NavHostController, drawingVM: DrawingViewModel)
     var selectedUri by remember { mutableStateOf<Uri?>(null) }
     var imageBitmap by remember { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
     val context = LocalContext.current
+    var showDetails by remember {mutableStateOf<Boolean>(false)}
     val imageSelectLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -80,6 +82,12 @@ fun DrawingCanvas(navController: NavHostController, drawingVM: DrawingViewModel)
             }
             bitmap?.asImageBitmap()
         }
+        imageBitmap?.let {
+            val androidBitmap = it.asAndroidBitmap()
+            drawingVM.analyzeImage(androidBitmap)
+        } ?: run {
+            println("No image imported to analyze")
+        }
     }
 
     Column(
@@ -92,27 +100,40 @@ fun DrawingCanvas(navController: NavHostController, drawingVM: DrawingViewModel)
             Text("Import image from gallery")
         }
 
-        // TEMPORARY TEST BUTTON - analyzes current drawing
-        Button(onClick = {
-            imageBitmap?.let {
-                // Convert Compose ImageBitmap to Android Bitmap
-                val androidBitmap = it.asAndroidBitmap()
-                drawingVM.analyzeImage(androidBitmap)
-            } ?: run {
-                println("No image imported to analyze")
-            }
-        }, modifier = Modifier.padding(5.dp)) {
-            Text("Test API on Imported Image")
-        }
+//        Commented out but left for now
+//
+//        // TEMPORARY TEST BUTTON - analyzes current drawing
+//        Button(onClick = {
+//            imageBitmap?.let {
+//                // Convert Compose ImageBitmap to Android Bitmap
+//                val androidBitmap = it.asAndroidBitmap()
+//                drawingVM.analyzeImage(androidBitmap)
+//            } ?: run {
+//                println("No image imported to analyze")
+//            }
+//        }, modifier = Modifier.padding(5.dp)) {
+//            Text("Test API on Imported Image")
+//        }
 
         // DISPLAY RESULTS
         val detectedObjects by drawingVM.detectedObjects.collectAsState()
         println("DEBUG UI: Detected objects count in UI: ${detectedObjects.size}")
 
-        Text("Detected: ${detectedObjects.size} objects", modifier = Modifier.padding(5.dp))
-        detectedObjects.forEach { obj ->
-            println("DEBUG UI: Displaying object: ${obj.name}")
-            Text("${obj.name}: ${(obj.score * 100).toInt()}%", modifier = Modifier.padding(2.dp))
+        if (imageBitmap != null) {
+            Row (verticalAlignment = Alignment.CenterVertically) {
+                Text("Detected: ${detectedObjects.size} objects", modifier = Modifier.padding(5.dp))
+                Button(onClick = {showDetails = !showDetails}, colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray)) {
+                    Text("Details")
+                }
+            }
+            if (showDetails) {
+                detectedObjects.forEach { obj ->
+                    Text(
+                        "${obj.name}: ${(obj.score * 100).toInt()}%",
+                        modifier = Modifier.padding(2.dp)
+                    )
+                }
+            }
         }
 
         Canvas(
