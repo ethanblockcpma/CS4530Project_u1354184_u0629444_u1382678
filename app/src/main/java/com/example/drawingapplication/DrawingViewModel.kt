@@ -33,10 +33,6 @@ data class DrawingPoint(
 )
 
 class DrawingViewModel(private val repository: DrawingRepository) : ViewModel() {
-
-    //PHASE 3: Creating AI Model
-    //private val model = GenerativeModel(modelName = "gemini-2.5-flash",apiKey = BuildConfig.GEMINI_API_KEY)
-
     //Drawing state
     private val penColor = MutableStateFlow(Color.Black)
     val penColorReadOnly : StateFlow<Color> = penColor

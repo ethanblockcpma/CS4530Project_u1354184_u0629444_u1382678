@@ -1,8 +1,6 @@
 package com.example.drawingapplication.view
 
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Point
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -45,25 +43,15 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.drawingapplication.DrawingViewModel
-import com.example.drawingapplication.ui.theme.DrawingApplicationTheme
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import coil.compose.AsyncImagePainter
-import coil.compose.rememberAsyncImagePainter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.File
 import androidx.compose.ui.graphics.asAndroidBitmap
-import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Stroke
-import com.example.drawingapplication.data.BoundingBox
-import com.example.drawingapplication.data.Vertex
-
 
 @Composable
 fun DrawingCanvas(navController: NavHostController, drawingVM: DrawingViewModel) {
@@ -71,7 +59,7 @@ fun DrawingCanvas(navController: NavHostController, drawingVM: DrawingViewModel)
 
     var selectedUri by remember { mutableStateOf<Uri?>(null) }
     var imageBitmap by remember { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
-    var boundingBoxes by remember { mutableStateOf<MutableMap<String, List<Offset>>>(mutableMapOf())}
+    var boundingBoxes by remember { mutableStateOf<List<List<Offset>>>(emptyList())}
     val context = LocalContext.current
     var showDetails by remember {mutableStateOf<Boolean>(false)}
     val imageSelectLauncher = rememberLauncherForActivityResult(
@@ -115,13 +103,13 @@ fun DrawingCanvas(navController: NavHostController, drawingVM: DrawingViewModel)
                     Text("Details")
                 }
             }
-            boundingBoxes.clear()
+            boundingBoxes = emptyList()
             detectedObjects.forEach {obj ->
                 var pts: List<Offset> = emptyList()
                 obj.boundingPoly.normalizedVertices.forEach { vertex ->
                     pts += Offset(vertex.x.toFloat(), vertex.y.toFloat())
                 }
-                boundingBoxes[obj.name] = pts
+                boundingBoxes += listOf(pts)
             }
             if (showDetails) {
                 detectedObjects.forEach { obj ->
@@ -167,7 +155,7 @@ fun DrawingCanvas(navController: NavHostController, drawingVM: DrawingViewModel)
             }
             // When details are expanded, show the bounding boxes
             if (showDetails) {
-                boundingBoxes.values.forEach { offsets ->
+                boundingBoxes.forEach { offsets ->
                     var ptsAdjusted: List<Offset> = emptyList()
                     offsets.forEach { offset ->
                         ptsAdjusted += Offset(offset.x * size.width, offset.y * size.height)
