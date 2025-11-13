@@ -1,22 +1,56 @@
 package com.example.drawingapplication
 
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.lifecycle.viewmodel.compose.viewModel
-import org.junit.Test
-
-import org.junit.Assert.*
-import com.example.drawingapplication.DrawingViewModel
 import com.example.drawingapplication.data.DrawingRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.TestDispatcher
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.setMain
+import org.junit.Assert.*
 import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
+import org.junit.rules.TestWatcher
+import org.junit.runner.Description
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.`when`
 
+@ExperimentalCoroutinesApi
+class MainDispatcherRule(
+    private val testDispatcher: TestDispatcher = UnconfinedTestDispatcher(),
+) : TestWatcher() {
+    override fun starting(description: Description) {
+        Dispatchers.setMain(testDispatcher)
+    }
+
+    override fun finished(description: Description) {
+        Dispatchers.resetMain()
+    }
+}
+
+@ExperimentalCoroutinesApi
 class DrawingApplicationUnitTest {
 
+    @get:Rule
+    val mainDispatcherRule = MainDispatcherRule()
+
+    private lateinit var vm: DrawingViewModel
+    private lateinit var mockRepository: DrawingRepository
+
+    @Before
+    fun setup() {
+        mockRepository = mock(DrawingRepository::class.java)
+        `when`(mockRepository.allDrawings).thenReturn(flowOf(emptyList()))
+        vm = DrawingViewModel(mockRepository)
+    }
+
     @Test
-    fun changeColorCorrectly(){
+    fun changeColorCorrectly() {
         // Test initial color is set correctly
-        val vm = DrawingViewModel()
         assertEquals(Color.Black, vm.penColorReadOnly.value)
 
         // Test changing color updates correctly
@@ -25,9 +59,8 @@ class DrawingApplicationUnitTest {
     }
 
     @Test
-    fun changeSizeCorrectly(){
+    fun changeSizeCorrectly() {
         // Test initial size is set correctly
-        val vm = DrawingViewModel()
         assertEquals(8f, vm.penSizeReadOnly.value)
 
         // Test changing size updates correctly
@@ -36,9 +69,8 @@ class DrawingApplicationUnitTest {
     }
 
     @Test
-    fun changeShapeCorrectly(){
+    fun changeShapeCorrectly() {
         // Test initial shape is set correctly
-        val vm = DrawingViewModel()
         assertEquals("circle", vm.penShapeReadOnly.value)
 
         // Test changing shape updates correctly
@@ -47,9 +79,8 @@ class DrawingApplicationUnitTest {
     }
 
     @Test
-    fun toggleAndChangePenOptionsCorrectly(){
+    fun toggleAndChangePenOptionsCorrectly() {
         // Test that no options are shown initially
-        val vm = DrawingViewModel()
         assertEquals(DrawingViewModel.PenOptions.NONE, vm.penOptionsShownReadOnly.value)
 
         // Test showing pen options shown updates correctly
@@ -63,6 +94,50 @@ class DrawingApplicationUnitTest {
         // Test selecting the currently selected pen options toggles the menu off
         vm.changeOrTogglePenOptions(DrawingViewModel.PenOptions.COLOR)
         assertEquals(DrawingViewModel.PenOptions.NONE, vm.penOptionsShownReadOnly.value)
+    }
+
+    @Test
+    fun startStroke_addsToCurrentStrokeAndStrokes() {
+        assertEquals(emptyList<List<DrawingPoint>>(), vm.strokesReadOnly.value)
+        assertEquals(emptyList<DrawingPoint>(), vm.currentStrokeReadOnly.value)
+
+        val offset = Offset(10f, 10f)
+        vm.startStoke(offset)
+
+        assertEquals(1, vm.strokesReadOnly.value.size)
+        assertEquals(1, vm.strokesReadOnly.value[0].size)
+        assertEquals(offset, vm.strokesReadOnly.value[0][0].offset)
+
+        assertEquals(1, vm.currentStrokeReadOnly.value.size)
+        assertEquals(offset, vm.currentStrokeReadOnly.value[0].offset)
+    }
+
+    @Test
+    fun addToStroke_addsPointToCurrentStroke() {
+        val startOffset = Offset(10f, 10f)
+        vm.startStoke(startOffset)
+
+        val secondOffset = Offset(20f, 20f)
+        vm.addToStroke(secondOffset)
+
+        assertEquals(1, vm.strokesReadOnly.value.size)
+        assertEquals(2, vm.strokesReadOnly.value[0].size)
+        assertEquals(secondOffset, vm.strokesReadOnly.value[0][1].offset)
+
+        assertEquals(2, vm.currentStrokeReadOnly.value.size)
+        assertEquals(secondOffset, vm.currentStrokeReadOnly.value[1].offset)
+    }
+
+    @Test
+    fun endStroke_clearsCurrentStroke() {
+        val offset = Offset(10f, 10f)
+        vm.startStoke(offset)
+        assertNotEquals(emptyList<DrawingPoint>(), vm.currentStrokeReadOnly.value)
+
+        vm.endStroke()
+        assertEquals(emptyList<DrawingPoint>(), vm.currentStrokeReadOnly.value)
+        // strokes should remain
+        assertEquals(1, vm.strokesReadOnly.value.size)
     }
 
 }
