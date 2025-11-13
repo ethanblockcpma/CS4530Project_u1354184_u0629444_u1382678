@@ -2,6 +2,7 @@ package com.example.drawingapplication.view
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Point
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -58,7 +59,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.graphics.drawscope.DrawStyle
+import androidx.compose.ui.graphics.drawscope.Stroke
 import com.example.drawingapplication.data.BoundingBox
+import com.example.drawingapplication.data.Vertex
 
 
 @Composable
@@ -67,6 +71,7 @@ fun DrawingCanvas(navController: NavHostController, drawingVM: DrawingViewModel)
 
     var selectedUri by remember { mutableStateOf<Uri?>(null) }
     var imageBitmap by remember { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
+    var boundingBoxes by remember { mutableStateOf<MutableMap<String, List<Offset>>>(mutableMapOf())}
     val context = LocalContext.current
     var showDetails by remember {mutableStateOf<Boolean>(false)}
     val imageSelectLauncher = rememberLauncherForActivityResult(
@@ -100,24 +105,8 @@ fun DrawingCanvas(navController: NavHostController, drawingVM: DrawingViewModel)
             Text("Import image from gallery")
         }
 
-//        Commented out but left for now
-//
-//        // TEMPORARY TEST BUTTON - analyzes current drawing
-//        Button(onClick = {
-//            imageBitmap?.let {
-//                // Convert Compose ImageBitmap to Android Bitmap
-//                val androidBitmap = it.asAndroidBitmap()
-//                drawingVM.analyzeImage(androidBitmap)
-//            } ?: run {
-//                println("No image imported to analyze")
-//            }
-//        }, modifier = Modifier.padding(5.dp)) {
-//            Text("Test API on Imported Image")
-//        }
-
         // DISPLAY RESULTS
         val detectedObjects by drawingVM.detectedObjects.collectAsState()
-        println("DEBUG UI: Detected objects count in UI: ${detectedObjects.size}")
 
         if (imageBitmap != null) {
             Row (verticalAlignment = Alignment.CenterVertically) {
@@ -125,6 +114,14 @@ fun DrawingCanvas(navController: NavHostController, drawingVM: DrawingViewModel)
                 Button(onClick = {showDetails = !showDetails}, colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray)) {
                     Text("Details")
                 }
+            }
+            boundingBoxes.clear()
+            detectedObjects.forEach {obj ->
+                var pts: List<Offset> = emptyList()
+                obj.boundingPoly.normalizedVertices.forEach { vertex ->
+                    pts += Offset(vertex.x.toFloat(), vertex.y.toFloat())
+                }
+                boundingBoxes[obj.name] = pts
             }
             if (showDetails) {
                 detectedObjects.forEach { obj ->
@@ -167,6 +164,28 @@ fun DrawingCanvas(navController: NavHostController, drawingVM: DrawingViewModel)
                         size.height.toInt()
                     )
                 )
+            }
+            // When details are expanded, show the bounding boxes
+            if (showDetails) {
+                boundingBoxes.values.forEach { offsets ->
+                    var ptsAdjusted: List<Offset> = emptyList()
+                    offsets.forEach { offset ->
+                        ptsAdjusted += Offset(offset.x * size.width, offset.y * size.height)
+                    }
+                    val minX = ptsAdjusted.minOf { it.x }
+                    val maxX = ptsAdjusted.maxOf { it.x }
+                    val minY = ptsAdjusted.minOf { it.y }
+                    val maxY = ptsAdjusted.maxOf { it.y }
+
+                    drawRect(
+                        color = Color.Black,
+                        topLeft = Offset(minX, minY),
+                        size = Size(
+                            maxX - minX, maxY - minY
+                        ),
+                        style = Stroke(10.0f)
+                    )
+                }
             }
             // Draw all completed strokes
             strokes.forEach { stroke ->
