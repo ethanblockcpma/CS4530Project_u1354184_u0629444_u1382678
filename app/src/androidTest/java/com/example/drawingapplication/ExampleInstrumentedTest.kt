@@ -1,5 +1,7 @@
 package com.example.drawingapplication
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.test.platform.app.InstrumentationRegistry
@@ -28,10 +30,12 @@ import com.example.drawingapplication.view.MainScreen
 import kotlinx.coroutines.runBlocking
 import com.example.drawingapplication.data.Drawing
 import com.example.drawingapplication.navigation.AppNavHost
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 
 import org.junit.After
 import org.junit.Rule
+import java.io.ByteArrayOutputStream
 
 
 /**
@@ -326,6 +330,48 @@ class ExampleInstrumentedTest {
     }
 
 
+    //ai tests
+
+    @Test
+    fun detectedObjectsEmptyInitially(){
+        assertEquals(0, vm.detectedObjects.value.size)
+    }
+
+    @Test
+    fun analyzeImageUpdatesState() = runBlocking {
+        //blank image
+        val testImage = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888)
+
+        vm.analyzeImage(testImage)
+
+        //wait for api response
+        delay(5000)
+
+        assertNotNull(vm.detectedObjects.value)
+    }
+
+    @Test
+    fun repositoryDetectsDogInImage() = runBlocking {
+        val context = InstrumentationRegistry.getInstrumentation().context
+
+        //load test dog image and convert to base64
+        val inputStream = context.assets.open("test_images/dog.jpg")
+        val bitmap = BitmapFactory.decodeStream(inputStream)
+
+        val outputStream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
+        val base64Image = android.util.Base64.encodeToString(
+            outputStream.toByteArray(),
+            android.util.Base64.DEFAULT
+        )
+
+        //call API and verify dog is detected
+        val response = repo.analyzePicture(base64Image)
+        val detections = response.responses[0].localizedObjectAnnotations
+
+        assertNotNull(detections)
+        assertTrue(detections!!.any { it.name == "Dog" })
+    }
 
     /**
     @Test
