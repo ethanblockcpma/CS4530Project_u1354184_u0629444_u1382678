@@ -373,6 +373,24 @@ class ExampleInstrumentedTest {
         assertTrue(detections!!.any { it.name == "Dog" })
     }
 
+    @Test
+    fun detectObjectsDisplayInUI(){
+        composeTestRule.setContent {
+            navController = TestNavHostController(LocalContext.current)
+            navController.navigatorProvider.addNavigator(ComposeNavigator())
+            DrawingApplicationTheme {
+                DrawingCanvas(navController, vm)
+            }
+        }
+
+        composeTestRule.onNodeWithText("Detected: 0 Objects").assertDoesNotExist()
+
+        composeTestRule.onNodeWithText("Import image from gallery").assertIsDisplayed()
+
+        composeTestRule.onNodeWithText("Details").assertDoesNotExist()
+    }
+
+
     /**
     @Test
     fun useAppContext() {
