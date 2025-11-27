@@ -35,13 +35,15 @@ class MainActivity : ComponentActivity() {
         DrawingViewModelFactory(repository)
     }
 
+    private val firebaseViewModel : FirebaseViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             DrawingApplicationTheme {
                 val navController = rememberNavController()
-                AppNavHost(navController, drawingViewModel)
+                AppNavHost(navController, drawingViewModel, firebaseViewModel)
             }
         }
     }
@@ -53,7 +55,7 @@ fun SplashScreen(navController : NavHostController){
 
     LaunchedEffect(Unit){
         delay(2000)
-        navController.navigate("main")
+        navController.navigate("auth")
     }
 
     Box(

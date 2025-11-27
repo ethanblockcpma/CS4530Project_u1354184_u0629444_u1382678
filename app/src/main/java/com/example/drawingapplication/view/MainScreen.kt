@@ -24,10 +24,11 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.example.drawingapplication.DrawingViewModel
+import com.example.drawingapplication.FirebaseViewModel
 import java.io.File
 
 @Composable
-fun MainScreen(navController: NavHostController, drawingVM: DrawingViewModel) {
+fun MainScreen(navController: NavHostController, drawingVM: DrawingViewModel, firebaseVM : FirebaseViewModel) {
     val drawings by drawingVM.allDrawings.collectAsState()
 
     Column(
@@ -38,6 +39,17 @@ fun MainScreen(navController: NavHostController, drawingVM: DrawingViewModel) {
 
         Button(onClick = { navController.navigate("drawing") }) {
             Text("New Drawing")
+        }
+
+        Button(onClick = {
+            firebaseVM.signOut()
+            navController.navigate("auth") {
+                //following line makes it so we cant go back to
+                //other screens w/o auth
+                popUpTo("main") {inclusive = true}
+            }
+        }) {
+            Text("Sign out")
         }
 
         // Grid of saved drawings (3 columns like Instagram)
