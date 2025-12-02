@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -30,6 +31,12 @@ import java.io.File
 @Composable
 fun MainScreen(navController: NavHostController, drawingVM: DrawingViewModel, firebaseVM : FirebaseViewModel) {
     val drawings by drawingVM.allDrawings.collectAsState()
+
+    val cloudDrawings by firebaseVM.cloudDrawings.collectAsState()
+
+    LaunchedEffect(Unit) {
+        firebaseVM.loadMyCloudDrawings()
+    }
 
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -52,13 +59,15 @@ fun MainScreen(navController: NavHostController, drawingVM: DrawingViewModel, fi
             Text("Sign out")
         }
 
+        Text("Local Drawings", fontSize = 20.sp, modifier = Modifier.padding(top = 16.dp))
+
         // Grid of saved drawings (3 columns like Instagram)
         LazyVerticalGrid(
             columns = GridCells.Fixed(3),
             contentPadding = PaddingValues(8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxSize().padding(top = 16.dp)
+            modifier = Modifier.fillMaxSize().weight(1f) //weight(1f) means take up half the space
         ) {
             items(drawings) { drawing ->
                 Image(
@@ -71,5 +80,28 @@ fun MainScreen(navController: NavHostController, drawingVM: DrawingViewModel, fi
                 )
             }
         }
+
+        Text("Cloud Drawings", fontSize = 20.sp, modifier = Modifier.padding(top=16.dp))
+
+        //grid of cloud drawings
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(3),
+            contentPadding = PaddingValues(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxSize().weight(1f)
+        ) {
+            items(cloudDrawings) { drawing ->
+                Image(
+                    painter = rememberAsyncImagePainter(drawing.imageURL),
+                    contentDescription = drawing.title,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f),
+                    contentScale = ContentScale.Crop
+                )
+            }
+        }
+
     }
 }

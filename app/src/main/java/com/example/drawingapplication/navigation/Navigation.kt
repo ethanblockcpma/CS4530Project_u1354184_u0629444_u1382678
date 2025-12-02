@@ -32,7 +32,7 @@ fun AppNavHost(
         }
 
         composable("drawing") {
-            DrawingCanvas(navController, drawingViewModel)
+            DrawingCanvas(navController, drawingViewModel, firebaseViewModel)
         }
     }
 }

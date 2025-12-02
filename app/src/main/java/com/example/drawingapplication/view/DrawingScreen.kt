@@ -52,9 +52,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import com.example.drawingapplication.FirebaseViewModel
 
 @Composable
-fun DrawingCanvas(navController: NavHostController, drawingVM: DrawingViewModel) {
+fun DrawingCanvas(
+    navController: NavHostController,
+    drawingVM: DrawingViewModel,
+    firebaseVM : FirebaseViewModel
+    ) {
     val strokes by drawingVM.strokesReadOnly.collectAsState()
 
     var selectedUri by remember { mutableStateOf<Uri?>(null) }
@@ -328,6 +333,12 @@ fun DrawingCanvas(navController: NavHostController, drawingVM: DrawingViewModel)
             Button(onClick = { drawingVM.shareDrawing(context) }, modifier = Modifier.padding(5.dp)) {
                 Text("Share")
             }
+            Button(onClick = {
+                val file = drawingVM.getDrawingAsPng(context)
+                firebaseVM.uploadDrawingToCloud(file, file.name)
+            }, modifier = Modifier.padding(5.dp)) {
+                Text("Save to cloud")
+        }
         }
     }
 }
