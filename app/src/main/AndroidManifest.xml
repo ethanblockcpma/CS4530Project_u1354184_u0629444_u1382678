@@ -13,15 +13,17 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.DrawingApplication">
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.example.drawingapplication.fileprovider"
             android:grantUriPermissions="true"
             android:exported="false">
-        <meta-data
-            android:name="android.support.FILE_PROVIDER_PATHS"
-            android:resource="@xml/filepaths" />
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/filepaths" />
         </provider>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -29,13 +31,15 @@
             android:theme="@style/Theme.DrawingApplication">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".view.DrawingScreen"
-            android:exported="false" />
+            android:exported="false"
+            tools:ignore="MissingClass" />
+
     </application>
 
 </manifest>

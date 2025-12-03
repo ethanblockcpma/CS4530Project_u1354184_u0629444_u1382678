@@ -31,11 +31,12 @@ import java.io.File
 @Composable
 fun MainScreen(navController: NavHostController, drawingVM: DrawingViewModel, firebaseVM : FirebaseViewModel) {
     val drawings by drawingVM.allDrawings.collectAsState()
-
     val cloudDrawings by firebaseVM.cloudDrawings.collectAsState()
+    val sharedDrawings by firebaseVM.sharedDrawings.collectAsState()
 
     LaunchedEffect(Unit) {
         firebaseVM.loadMyCloudDrawings()
+        firebaseVM.loadSharedDrawings()
     }
 
     Column(
@@ -95,6 +96,27 @@ fun MainScreen(navController: NavHostController, drawingVM: DrawingViewModel, fi
                 Image(
                     painter = rememberAsyncImagePainter(drawing.imageURL),
                     contentDescription = drawing.title,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f),
+                    contentScale = ContentScale.Crop
+                )
+            }
+        }
+
+        Text("Shared Drawings", fontSize = 20.sp, modifier = Modifier.padding(top=16.dp))
+
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(3),
+            contentPadding = PaddingValues(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxSize().weight(1f)
+        ) {
+            items(sharedDrawings) { drawing ->
+                Image(
+                    painter = rememberAsyncImagePainter(drawing.imageUrl),
+                    contentDescription = "A shared drawing",
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(1f),

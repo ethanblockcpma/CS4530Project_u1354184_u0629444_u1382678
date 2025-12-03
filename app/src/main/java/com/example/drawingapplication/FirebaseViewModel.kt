@@ -2,7 +2,7 @@ package com.example.drawingapplication
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.drawingapplication.data.SharedDrawing
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -39,6 +39,9 @@ class FirebaseViewModel : ViewModel() {
     private val _cloudDrawings = MutableStateFlow<List<CloudDrawing>>(emptyList())
     val cloudDrawings:StateFlow<List<CloudDrawing>> = _cloudDrawings
 
+    private val _sharedDrawings = MutableStateFlow<List<SharedDrawing>>(emptyList())
+    val sharedDrawings: StateFlow<List<SharedDrawing>> = _sharedDrawings
+
     fun signIn(email: String, pw: String) {
         viewModelScope.launch{
             try{
@@ -47,6 +50,7 @@ class FirebaseViewModel : ViewModel() {
                 _errorMsg.value = null
                 //once logged in load cloud drawings
                 loadMyCloudDrawings()
+                loadSharedDrawings()
             } catch (e: Exception) {
                 _errorMsg.value = e.message
             }
@@ -114,6 +118,36 @@ class FirebaseViewModel : ViewModel() {
         }
     }
 
+    fun shareDrawingWithEmail(file: File, title: String, receiverEmail: String) {
+        viewModelScope.launch {
+            try {
+                val senderId = auth.currentUser?.uid
+                if (senderId == null) {
+                    _errorMsg.value = "User not logged in."
+                    return@launch
+                }
+
+                val storagePath = "drawings/$senderId/${file.name}"
+                val storageRef = storage.reference.child(storagePath)
+                storageRef.putFile(android.net.Uri.fromFile(file)).await()
+
+                val imageUrl = storageRef.downloadUrl.await().toString()
+
+                val sharedDrawingData = SharedDrawing(
+                    imageUrl = imageUrl,
+                    senderId = senderId,
+                    receiverEmail = receiverEmail
+                )
+
+                firestore.collection("shared_drawings").add(sharedDrawingData).await()
+                _errorMsg.value = "Drawing shared successfully with $receiverEmail"
+
+            } catch (e: Exception) {
+                _errorMsg.value = "Failed to share drawing: ${e.message}"
+            }
+        }
+    }
+
     fun loadMyCloudDrawings() {
         viewModelScope.launch {
             try{
@@ -146,6 +180,38 @@ class FirebaseViewModel : ViewModel() {
 
             } catch(e:Exception) {
                 _errorMsg.value = "Failed to load drawings: ${e.message}"
+            }
+        }
+    }
+    
+    fun unshareDrawing(documentId: String) {
+        viewModelScope.launch {
+            try {
+                firestore.collection("shared_drawings").document(documentId).delete().await()
+                loadSharedDrawings() // Refresh the list
+            } catch (e: Exception) {
+                _errorMsg.value = "Failed to unshare drawing: ${e.message}"
+            }
+        }
+    }
+
+    fun loadSharedDrawings() {
+        viewModelScope.launch {
+            try {
+                val currentUserEmail = auth.currentUser?.email
+                if (currentUserEmail == null) {
+                    return@launch
+                }
+
+                val query = firestore.collection("shared_drawings")
+                    .whereEqualTo("receiverEmail", currentUserEmail).get().await()
+
+                val drawings = query.documents.mapNotNull { document ->
+                    document.toObject(SharedDrawing::class.java)
+                }
+                _sharedDrawings.value = drawings
+            } catch (e: Exception) {
+                _errorMsg.value = "Failed to load shared drawings: ${e.message}"
             }
         }
     }

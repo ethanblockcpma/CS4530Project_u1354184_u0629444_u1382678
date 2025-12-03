@@ -73,6 +73,20 @@ fun DrawingCanvas(
         selectedUri = uri
     }
 
+    var showShareDialog by remember { mutableStateOf(false) }
+
+    if (showShareDialog) {
+        ShareDialog(
+            onDismiss = { showShareDialog = false },
+            onShare = { email ->
+                val file = drawingVM.getDrawingAsPng(context)
+                firebaseVM.shareDrawingWithEmail(file, file.name, email)
+                showShareDialog = false
+            }
+        )
+    }
+
+
     LaunchedEffect(selectedUri) {
         imageBitmap = selectedUri?.let { uri ->
             val bitmap = withContext(Dispatchers.IO) {
@@ -330,7 +344,7 @@ fun DrawingCanvas(
             Button(onClick = { drawingVM.saveDrawing(context) }, modifier = Modifier.padding(5.dp)) {
                 Text("Save")
             }
-            Button(onClick = { drawingVM.shareDrawing(context) }, modifier = Modifier.padding(5.dp)) {
+            Button(onClick = { showShareDialog = true }, modifier = Modifier.padding(5.dp)) {
                 Text("Share")
             }
             Button(onClick = {
