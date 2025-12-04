@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
@@ -296,14 +297,31 @@ fun DrawingCanvas(
                             Modifier.padding(8.dp).fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceEvenly
                         ) {
-                            shapes.forEach { shape ->
-                                Button(
-                                    onClick = { drawingVM.changePenShape(shape) },
-                                    Modifier.padding(5.dp)
-                                ) {
-                                    Text(shape)
-                                }
+                            Button(
+                                onClick = { drawingVM.changePenShape("circle") },
+                                Modifier.size(60.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = drawingVM.penColorReadOnly.collectAsState().value)
+                            ) {}
+                            Button(
+                                onClick = { drawingVM.changePenShape("rectangle") },
+                                Modifier.size(60.dp),
+                                shape = RoundedCornerShape(0.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = drawingVM.penColorReadOnly.collectAsState().value)
+                            ) {}
+                            Button(
+                                onClick = { drawingVM.changePenShape("oval") },
+                                Modifier.height(80.dp).width(60.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = drawingVM.penColorReadOnly.collectAsState().value)
+                            ) {
                             }
+//                            shapes.forEach { shape ->
+//                                Button(
+//                                    onClick = { drawingVM.changePenShape(shape) },
+//                                    Modifier.padding(5.dp)
+//                                ) {
+//                                    Text(shape)
+//                                }
+//                            }
 
                         }
                     }
