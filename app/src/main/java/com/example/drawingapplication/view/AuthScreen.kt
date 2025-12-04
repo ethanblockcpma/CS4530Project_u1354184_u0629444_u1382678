@@ -18,6 +18,7 @@ import com.example.drawingapplication.FirebaseViewModel
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
@@ -45,10 +46,12 @@ fun AuthScreen(navController : NavHostController, firebaseViewModel : FirebaseVi
     ) {
         Spacer(modifier = Modifier.height(100.dp))
 
-        OutlinedTextField(value = email, onValueChange = { email = it }, label = { Text("Email") })
+        OutlinedTextField(value = email, onValueChange = { email = it }, label = { Text("Email") },
+            colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.Black, unfocusedTextColor = Color.Black))
         Spacer(modifier = Modifier.height(16.dp))
 
-        OutlinedTextField(value = pw, onValueChange = { pw = it }, label = { Text("Password") }, visualTransformation = PasswordVisualTransformation())
+        OutlinedTextField(value = pw, onValueChange = { pw = it }, label = { Text("Password") }, visualTransformation = PasswordVisualTransformation(),
+            colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.Black, unfocusedTextColor = Color.Black))
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(onClick = { firebaseViewModel.signIn(email, pw) }) {

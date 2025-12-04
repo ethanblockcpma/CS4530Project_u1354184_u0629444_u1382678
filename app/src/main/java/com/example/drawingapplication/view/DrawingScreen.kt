@@ -337,22 +337,32 @@ fun DrawingCanvas(
         Row(
             modifier = Modifier.padding(vertical = 16.dp),
         ) {
-            Button(onClick = { navController.navigate("main") }, modifier = Modifier.padding(5.dp)) {
+            Button(
+                onClick = { navController.navigate("main") },
+                modifier = Modifier.padding(5.dp)
+            ) {
                 Text("Home")
             }
             val context = LocalContext.current
-            Button(onClick = { drawingVM.saveDrawing(context) }, modifier = Modifier.padding(5.dp)) {
+            Button(
+                onClick = { drawingVM.saveDrawing(context) },
+                modifier = Modifier.padding(5.dp)
+            ) {
                 Text("Save")
             }
             Button(onClick = { showShareDialog = true }, modifier = Modifier.padding(5.dp)) {
                 Text("Share")
             }
+        }
+        Row (
+            modifier = Modifier.padding(vertical = 5.dp)
+        ){
             Button(onClick = {
                 val file = drawingVM.getDrawingAsPng(context)
                 firebaseVM.uploadDrawingToCloud(file, file.name)
             }, modifier = Modifier.padding(5.dp)) {
                 Text("Save to cloud")
-        }
+            }
         }
     }
 }

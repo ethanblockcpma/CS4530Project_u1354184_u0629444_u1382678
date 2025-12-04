@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -44,20 +45,21 @@ fun MainScreen(navController: NavHostController, drawingVM: DrawingViewModel, fi
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text("My Drawings", fontSize = 32.sp, modifier = Modifier.padding(bottom = 16.dp))
-
-        Button(onClick = { navController.navigate("drawing") }) {
-            Text("New Drawing")
-        }
-
-        Button(onClick = {
-            firebaseVM.signOut()
-            navController.navigate("auth") {
-                //following line makes it so we cant go back to
-                //other screens w/o auth
-                popUpTo("main") {inclusive = true}
+        Row {
+            Button(modifier = Modifier.padding(horizontal = 5.dp), onClick = { navController.navigate("drawing") }) {
+                Text("New Drawing")
             }
-        }) {
-            Text("Sign out")
+
+            Button(modifier = Modifier.padding(horizontal = 5.dp), onClick = {
+                firebaseVM.signOut()
+                navController.navigate("auth") {
+                    //following line makes it so we cant go back to
+                    //other screens w/o auth
+                    popUpTo("main") { inclusive = true }
+                }
+            }) {
+                Text("Sign out")
+            }
         }
 
         Text("Local Drawings", fontSize = 20.sp, modifier = Modifier.padding(top = 16.dp))
